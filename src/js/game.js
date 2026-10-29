@@ -244,7 +244,7 @@ function crearEnemigo(x, y) {
     const g = new THREE.Group();
     // Enemigo achatado con los ojos integrados de la profe
     const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), MATERIALES.enemigo);
-
+   }
 cuerpo.scale.set(1, 0.78, 0.9);
 cuerpo.castShadow = true;
 g.add(cuerpo);
@@ -258,7 +258,7 @@ g.add(ojo, pupila);
 g.position.set(x + 0.5, y + 0.4, 0);
 grupoNivel.add(g);
 enemigos.push({ malla: g, x: x + 0.5, y: y + 0.4, dir: -1, vivo: true, aplastado: 0 });
-}
+
 function crearPoste(x, y, alto, matBandera) {
 const g = new THREE.Group();
 const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, alto, 8), MATERIALES.poste);

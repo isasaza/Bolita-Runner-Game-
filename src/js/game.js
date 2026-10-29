@@ -7,7 +7,9 @@
     - Eje Z -> Adelante (profundidad del jugador)
 */
 import * as THREE from 'three';
- console.log("game.js NUEVO cargado");
+
+console.log("game.js NUEVO cargado");
+
 const CONFIG = {
     GRAVEDAD: -32,
     VEL_CAMINAR: 6,
@@ -45,7 +47,7 @@ const MAPA_NIVEL = [
   "          G                                                        BBB                              SSS",
   "                              oooo                                                                 SSSS",
   "                              BBBB                    SS   S                                      SSSSS",
-  "        GBGBG                                        SSS   SS     BGBGB          oo   GGG        SSSSSS",
+  "        GBGBG                                        SSS   SS     BGBGB          oo   GGG        SSSSCC",
   "                    C                     C         SSSS   SSS                                  SSSSSSS",
   "  P            E    C               E E   C    E   SSSSS   SSSS K       E E               E    SSSSSSSS   F",
   "#########################  #############################   ######################  ###########################",
@@ -60,8 +62,10 @@ const COLOR_CIELO = 0x6ec6ff;
  
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(COLOR_CIELO);
+
 // FOG
 scene.fog = new THREE.Fog(COLOR_CIELO, 25, 60);
+
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
 camera.position.set(5, 5, 14);
  
@@ -70,12 +74,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.setAnimationLoop(animate);
 document.body.appendChild(renderer.domElement);
  
 const light = new THREE.AmbientLight( 0x404040, 50); // soft white light
 scene.add( light );
- 
  
 window.addEventListener('resize', () => {
     // 1. Actualizar el tamaño del renderizador
@@ -88,8 +90,7 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 });
  
- 
-/* Diseño del nivel (TILEMAP) */
+/* Estado del nivel */
 /* ************************************************** */
 let grupoNivel = null,
     bloques = new Map(),
@@ -127,21 +128,23 @@ function construirNivel() {
                 crearBloque(index, yMundo, element);
             }
         }
- 
-    })
+    });
 }
  
 // 1. Crear el cargador de texturas
 const textureLoader = new THREE.TextureLoader();
-// 2. Cargar la imagen especificando su ruta (local o URL externa)
+
+// 2. Cargar la imagen especificando su ruta física real
 const texTierra = textureLoader.load('./src/img/texture/tierra.png');
 const texSuelo = textureLoader.load('./src/img/texture/cesped.png');
 const texLadrillo = textureLoader.load('./src/img/texture/muro.png');
+
 // Tierra de relleno: la caja mide 1x4, así que repetimos la imagen 4 veces en vertical
 const texTierraRelleno = textureLoader.load('./src/img/texture/tierra.png');
 texTierraRelleno.wrapS = THREE.RepeatWrapping;
 texTierraRelleno.wrapT = THREE.RepeatWrapping;
 texTierraRelleno.repeat.set(1, 4);
+
 const texSueloLado = textureLoader.load('./src/img/texture/tierra-lado.png');  // lados del suelo (tierra + borde de pasto)
 const texSorpresa  = textureLoader.load('./src/img/texture/misterio.png');
 const texUsado     = textureLoader.load('./src/img/texture/vacio.png');
@@ -154,13 +157,10 @@ const texColumna   = textureLoader.load('./src/img/texture/pilar.png');
     tex.colorSpace = THREE.SRGBColorSpace;
 });
  
- 
 // CREAR LOS MATERIALES
-// MeshLambertMaterial: material sencillo que reacciona a la luz.
 const matSueloLado = new THREE.MeshLambertMaterial({ map: texSueloLado });
 const MATERIALES = {
     // Un BoxGeometry tiene 6 caras, en este orden: [+X, -X, +Y (arriba), -Y (abajo), +Z, -Z]
-    // Pasando un ARREGLO de materiales, cada cara usa uno distinto.
     suelo: [
         matSueloLado,
         matSueloLado,
@@ -171,26 +171,20 @@ const MATERIALES = {
     ],
     tierra:   new THREE.MeshLambertMaterial({ map: texTierraRelleno }),
     ladrillo: new THREE.MeshLambertMaterial({ map: texLadrillo }),
-    // emissive: el bloque "brilla" un poco aunque esté en sombra
     sorpresa: new THREE.MeshLambertMaterial({ map: texSorpresa, emissive: 0x332200 }),
     usado:    new THREE.MeshLambertMaterial({ map: texUsado }),
     piedra:   new THREE.MeshLambertMaterial({ map: texPiedra }),
     columna:  new THREE.MeshLambertMaterial({ map: texColumna }),
-    // La gema no usa imagen: un color brillante se ve mejor en un objeto pequeño
     gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
 };
  
-// Reutilizamos UNA sola geometría para todos los bloques (ahorra memoria)
+// Reutilizamos geometrías para ahorrar memoria
 const GEO_BLOQUE = new THREE.BoxGeometry(1, 1, 1);
 const GEO_TIERRA = new THREE.BoxGeometry(1, 4, 1);
 const GEO_GEMA = new THREE.OctahedronGeometry(0.28);
  
-// sorpresa: ,
-//     piedra: ,
-//     columna: , 
-//     gema: 
 function crearBloque(x, y, tipo) {
-    // Seleccionar el material que se le va a colocar al bloque según su tipo
+    // Seleccionar el material según su tipo
     const material = {
         "#": MATERIALES.suelo,
         "B": MATERIALES.ladrillo,
@@ -201,77 +195,26 @@ function crearBloque(x, y, tipo) {
     }[tipo];
  
     const malla = new THREE.Mesh(GEO_BLOQUE, material);
-    // +0.5 porque el cubo se ubica desde su centro, pero la casilla va de x a x+1
     malla.position.set(x + 0.5, y + 0.5, 0);
     malla.castShadow = true;
     malla.receiveShadow = true;
     grupoNivel.add(malla);
     bloques.set(clave(x, y), { x, y, tipo, malla, rebote: 0 });
  
-    // Debajo de cada bloque de suelo agregamos tierra (solo decorativa, sin colisión)
+    // Debajo de cada bloque de suelo (#) agregamos tierra decorativa de 1x4 de altura
     if (tipo === "#") {
-        const tierra = new THREE.Mesh(GEO_TIERRA, MATERIALES.tierra);
-        tierra.position.set(x + 0.5, y - 2, 0);
-        tierra.receiveShadow = true;
-        grupoNivel.add(tierra);
+        const mallaTierra = new THREE.Mesh(GEO_TIERRA, MATERIALES.tierra);
+        mallaTierra.position.set(x + 0.5, y - 2.0, 0);
+        mallaTierra.castShadow = true;
+        mallaTierra.receiveShadow = true;
+        grupoNivel.add(mallaTierra);
     }
 }
- 
-/*   INTERFAZ: HUD Y PANTALLAS 
- */
- 
-const ui = {
-    vidas: document.getElementById("hud-vidas"),
-    gemas: document.getElementById("hud-gemas"), 
-    puntos: document.getElementById("hud-puntos"),
-    tiempo: document.getElementById("hud-tiempo"),
-    inicio: document.getElementById("pantalla-inicio"),
-    pausa: document.getElementById("pantalla-pausa"),
-    fin: document.getElementById("pantalla-fin"),
-    finTitulo: document.getElementById("fin-titulo"),
-    finDetalle: document.getElementById("fin-detalle")
-}
- 
-// Funcion actualizar HUD
- 
-// Temporizador
- 
-document.getElementById("btn-jugar").addEventListener('click', iniciarJuego);
-document.getElementById("btn-reiniciar").addEventListener('click', iniciarJuego);
- 
-// ********************************************
-// Variables de juego
-// ESTADO DE JUEGO Y EL BUCLE
-// ********************************************
-let estado = 'inicio',
-    vidas,
-    puntos,
-    gemasRecogidas,
-    tiempoRestante,
-    tiempoMuerte;
- 
-function iniciarJuego() {
-    // Creación de audio
- 
-    vidas = CONFIG.VIDAS_INICIALES;
-    puntos = 0;
-    //gemasRecogidas = 0;
-    tiempoRestante = CONFIG.TIEMPO_NIVEL;
-    puntoControl = null;
-    banderaMeta = null;
- 
-    // Construir el nivel UNA sola vez (no dentro de animate, que corre 60 veces por segundo)
-    construirNivel();
- 
-    ui.inicio.classList.add('oculto');
-    ui.fin.classList.add('oculto');
-    ui.pausa.classList.add('oculto');
-}
- 
- 
- 
-function animate(time) {
+
+// Inicializar y renderizar el bucle
+construirNivel();
+
+function animate() {
     renderer.render(scene, camera);
- 
 }
- 
+renderer.setAnimationLoop(animate);

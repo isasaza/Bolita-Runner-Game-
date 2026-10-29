@@ -49,7 +49,8 @@ scene.background = new THREE.Color(COLOR_CIELO);
 scene.fog = new THREE.Fog(COLOR_CIELO, 25, 60);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
-camera.position.set(5, 5, 14);
+// Centramos la cámara al inicio del mapa para ver al jugador nacer
+camera.position.set(2, 5, 12);
  
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -58,8 +59,14 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
  
-const light = new THREE.AmbientLight(0x404040, 50); 
+// Modificamos la iluminación para que el jugador y enemigos tengan luz y sombra propia
+const light = new THREE.AmbientLight(0xffffff, 0.8); 
 scene.add(light);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+dirLight.position.set(5, 15, 10);
+dirLight.castShadow = true;
+scene.add(dirLight);
  
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -67,7 +74,7 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 });
  
-/* Estado del nivel e Interfaces */
+/* Estado del nivel */
 let grupoNivel = null,
     bloques = new Map(),
     gemas = [],
@@ -223,38 +230,18 @@ function crearEnemigo(x, y) {
 function crearJugador() {
     if (jugador.malla) scene.remove(jugador.malla);
     const geoJugador = new THREE.CapsuleGeometry(jugador.ancho / 2, jugador.alto - jugador.ancho, 4, 8);
-    const matJugador = new THREE.MeshPhongMaterial({ color: 0x2196f3 });
+    // Cambiado a MeshStandardMaterial para que reaccione correctamente a las luces direccionales
+    const matJugador = new THREE.MeshStandardMaterial({ color: 0x0055ff, roughness: 0.3 });
     jugador.malla = new THREE.Mesh(geoJugador, matJugador);
-    jugador.malla.position.set(posicionInicial.x, posicionInicial.y + (jugador.alto / 2), 0);
+    
+    // Posición perfecta sobre el primer bloque de pasto inicial
+    jugador.malla.position.set(posicionInicial.x, posicionInicial.y + 0.6, 0);
+    jugador.malla.castShadow = true;
     scene.add(jugador.malla);
+    
     jugador.velocidad.set(0, 0, 0);
+    jugador.enSuelo = true;
 }
-
-/* SISTEMA DE MENÚ E INICIO DEL JUEGO */
-const iniciarInterfaz = () => {
-    const boton = document.createElement('button');
-    boton.innerText = 'JUGAR';
-    boton.style.position = 'absolute';
-    boton.style.top = '50%';
-    boton.style.left = '50%';
-    boton.style.transform = 'translate(-50%, -50%)';
-    boton.style.padding = '15px 40px';
-    boton.style.fontSize = '24px';
-    boton.style.fontWeight = 'bold';
-    boton.style.cursor = 'pointer';
-    boton.style.zIndex = '100';
-    boton.style.background = '#4caf50';
-    boton.style.color = 'white';
-    boton.style.border = 'none';
-    boton.style.borderRadius = '5px';
-    document.body.appendChild(boton);
-
-    boton.addEventListener('click', () => {
-        boton.remove(); 
-        construirNivel();
-        renderer.setAnimationLoop(animate);
-    });
-};
 
 /* BUCLE PRINCIPAL DE ANIMACIÓN Y FÍSICA */
 const clock = new THREE.Clock();
@@ -275,13 +262,14 @@ function animate() {
         jugador.velocidad.y += CONFIG.GRAVEDAD * dt;
         if (jugador.velocidad.y < CONFIG.VEL_MAX_CAIDA) jugador.velocidad.y = CONFIG.VEL_MAX_CAIDA;
 
+        if (teclas.saltar && jugador.enSuelo) {
+            jugador.velocidad.y = CONFIG.FUERZA_SALTO;
+            jugador.enSuelo = false;
+        }
 
-if (teclas.saltar && jugador.enSuelo) {
-jugador.velocidad.y = CONFIG.FUERZA_SALTO;
-jugador.enSuelo = false;
-}
-// --- 3. Aplicar Movimiento y Colisiones Simples ---
-jugador.malla.position.x += jugador.velocidad.x * dt;
+        // --- 3. Aplicar Movimiento y Colisiones Simples ---
+        jugador.malla.position.x += jugador.velocidad.x * dt;
+
 jugador.malla.position.y += jugador.velocidad.y * dt;
 const gx = Math.floor(jugador.malla.position.x);
 const gy = Math.floor(jugador.malla.position.y - jugador.alto / 2);
@@ -323,5 +311,6 @@ ene.vx *= -1;
 });
 renderer.render(scene, camera);
 }
-// Arranca mostrando la interfaz inicial
-iniciarInterfaz();
+// EJECUCIÓN INMEDIATA: Construye el nivel y activa el bucle gráfico al abrir la web
+construirNivel();
+renderer.setAnimationLoop(animate);

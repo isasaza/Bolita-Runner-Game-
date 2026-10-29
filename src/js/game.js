@@ -7,7 +7,7 @@
     - Eje Z -> Adelante (profundidad del jugador)
 */
 import * as THREE from 'three';
- 
+ console.log("game.js NUEVO cargado");
 const CONFIG = {
     GRAVEDAD: -32,
     VEL_CAMINAR: 6,

@@ -244,7 +244,7 @@ function crearEnemigo(x, y) {
     const g = new THREE.Group();
     // Enemigo achatado con los ojos integrados de la profe
     const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), MATERIALES.enemigo);
-Usa el código con precaución.
+
 cuerpo.scale.set(1, 0.78, 0.9);
 cuerpo.castShadow = true;
 g.add(cuerpo);
@@ -537,7 +537,7 @@ function terminar(gano, titulo) {
 estado = 'fin';
 if (gano) puntos += Math.ceil(tiempo) * 10;
 $('fin-titulo').textContent = titulo;
-$('fin-detalle').textContent = Puntos: ${puntos}  |  Gemas: ${nGemas};
+
 $('pantalla-fin').classList.remove('oculto');
 actualizarHUD();
 }
@@ -562,6 +562,7 @@ $('pantalla-pausa').classList.add('oculto');
 }
 $('btn-jugar').addEventListener('click', iniciar);
 $('btn-reiniciar').addEventListener('click', iniciar);
+
 /* ================= CÁMARA y LUCES SEGUIDORAS ================= */
 function actualizarCamara(dt) {
 const objX = Math.max(jug.x + 2, 6);
@@ -574,6 +575,7 @@ camera.lookAt(camera.position.x, camera.position.y - 0.5, 0);
 luz.position.set(jug.x + 10, 20, 15);
 luz.target.position.set(jug.x, 0, 0);
 }
+
 /* ================= BUCLE PRINCIPAL ================= */
 construirNivel();
 reaparecer();

@@ -29,18 +29,6 @@ const CONFIG = {
 };
  
 /* Diseño del nivel (TILEMAP) */
-/* **************************************************
-    # Suelo
-    G bloque sorpresa
-    C Columna de piedra
-    E Enemigo
-    K Punto de control
-    B ladrillo (se puede romper)
-    S bloque de piedra (escaleras)
-    o Coleccionable (gema)
-    P Jugador (posición inicial)
-    F Bandera de Meta
-***************************************************** */
 const MAPA_NIVEL = [
   "",
   "                                                                   ooo                               SS",
@@ -53,17 +41,11 @@ const MAPA_NIVEL = [
   "#########################  #############################   ######################  ###########################",
 ];
  
-// Caracteres sólidos (el jugador choca con ellos).
-// K y F NO van aquí: el jugador debe atravesarlos para activarlos.
-// U = bloque sorpresa ya usado (aparece cuando se golpea una G).
 const SOLIDOS = new Set(["#", "B", "G", "S", "C", "U"]);
- 
 const COLOR_CIELO = 0x6ec6ff;
  
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(COLOR_CIELO);
-
-// FOG
 scene.fog = new THREE.Fog(COLOR_CIELO, 25, 60);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
@@ -76,22 +58,16 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
  
-const light = new THREE.AmbientLight( 0x404040, 50); // soft white light
-scene.add( light );
+const light = new THREE.AmbientLight(0x404040, 50); 
+scene.add(light);
  
 window.addEventListener('resize', () => {
-    // 1. Actualizar el tamaño del renderizador
     renderer.setSize(window.innerWidth, window.innerHeight);
- 
-    // 2. Actualizar la relación de aspecto de la cámara
     camera.aspect = window.innerWidth / window.innerHeight;
- 
-    // 3. Renderizar los cambios en la matriz de proyección
     camera.updateProjectionMatrix();
 });
  
-/* Estado del nivel */
-/* ************************************************** */
+/* Estado del nivel e Interfaces */
 let grupoNivel = null,
     bloques = new Map(),
     gemas = [],
@@ -100,12 +76,76 @@ let grupoNivel = null,
     posicionInicial = { x: 2.5, y: 1 },
     puntoControl = null,
     banderaMeta = null;
-/* ************************************************** */
+
+// Objeto del Jugador
+let jugador = {
+    malla: null,
+    velocidad: new THREE.Vector3(),
+    enSuelo: false,
+    ancho: 0.6,
+    alto: 0.9
+};
+
+// Captura de Teclado
+const teclas = { izquierda: false, derecha: false, saltar: false };
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyA' || e.code === 'ArrowLeft') teclas.izquierda = true;
+    if (e.code === 'KeyD' || e.code === 'ArrowRight') teclas.derecha = true;
+    if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') teclas.saltar = true;
+});
+window.addEventListener('keyup', (e) => {
+    if (e.code === 'KeyA' || e.code === 'ArrowLeft') teclas.izquierda = false;
+    if (e.code === 'KeyD' || e.code === 'ArrowRight') teclas.derecha = false;
+    if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') teclas.saltar = false;
+});
  
 const clave = (x, y) => x + "," + y;
  
+/* CARGA DE TEXTURAS DE IMAGEN */
+const textureLoader = new THREE.TextureLoader();
+const texTierra = textureLoader.load('./src/img/texture/tierra.png');
+const texSuelo = textureLoader.load('./src/img/texture/cesped.png');
+const texLadrillo = textureLoader.load('./src/img/texture/muro.png');
+
+const texTierraRelleno = textureLoader.load('./src/img/texture/tierra.png');
+texTierraRelleno.wrapS = THREE.RepeatWrapping;
+texTierraRelleno.wrapT = THREE.RepeatWrapping;
+texTierraRelleno.repeat.set(1, 4);
+
+const texSueloLado = textureLoader.load('./src/img/texture/tierra-lado.png');  
+const texSorpresa  = textureLoader.load('./src/img/texture/misterio.png');
+const texUsado     = textureLoader.load('./src/img/texture/vacio.png');
+const texPiedra    = textureLoader.load('./src/img/texture/roca.png');
+const texColumna   = textureLoader.load('./src/img/texture/pilar.png');
+ 
+[texTierra, texSuelo, texLadrillo, texTierraRelleno, texSueloLado,
+ texSorpresa, texUsado, texPiedra, texColumna].forEach(tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+});
+ 
+/* MATERIALES Y GEOMETRÍAS */
+const matSueloLado = new THREE.MeshLambertMaterial({ map: texSueloLado });
+const MATERIALES = {
+    suelo: [
+        matSueloLado, matSueloLado,
+        new THREE.MeshLambertMaterial({ map: texSuelo }),   
+        new THREE.MeshLambertMaterial({ map: texTierra }),  
+        matSueloLado, matSueloLado,
+    ],
+    tierra:   new THREE.MeshLambertMaterial({ map: texTierraRelleno }),
+    ladrillo: new THREE.MeshLambertMaterial({ map: texLadrillo }),
+    sorpresa: new THREE.MeshLambertMaterial({ map: texSorpresa, emissive: 0x332200 }),
+    usado:    new THREE.MeshLambertMaterial({ map: texUsado }),
+    piedra:   new THREE.MeshLambertMaterial({ map: texPiedra }),
+    columna:  new THREE.MeshLambertMaterial({ map: texColumna }),
+    gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
+};
+ 
+const GEO_BLOQUE = new THREE.BoxGeometry(1, 1, 1);
+const GEO_TIERRA = new THREE.BoxGeometry(1, 4, 1);
+const GEO_GEMA = new THREE.OctahedronGeometry(0.25);
+ 
 function construirNivel() {
-    // Eliminar el grupo de nivel anterior
     if (grupoNivel) scene.remove(grupoNivel);
  
     grupoNivel = new THREE.Group();
@@ -118,73 +158,27 @@ function construirNivel() {
  
     const alto = MAPA_NIVEL.length;
     MAPA_NIVEL.forEach((fila, y) => {
-        const yMundo = alto - 1 - y; // Invertir el eje Y para que (0,0) esté en la esquina inferior izquierda
+        const yMundo = alto - 1 - y; 
  
         for (let index = 0; index < fila.length; index++) {
             const element = fila[index];
  
             if (SOLIDOS.has(element)) {
-                // Crear un bloque sólido
                 crearBloque(index, yMundo, element);
+            } else if (element === 'o') {
+                crearGema(index, yMundo);
+            } else if (element === 'E') {
+                crearEnemigo(index, yMundo);
+            } else if (element === 'P') {
+                posicionInicial = { x: index + 0.5, y: yMundo };
             }
         }
     });
+
+    crearJugador();
 }
  
-// 1. Crear el cargador de texturas
-const textureLoader = new THREE.TextureLoader();
-
-// 2. Cargar la imagen especificando su ruta física real
-const texTierra = textureLoader.load('./src/img/texture/tierra.png');
-const texSuelo = textureLoader.load('./src/img/texture/cesped.png');
-const texLadrillo = textureLoader.load('./src/img/texture/muro.png');
-
-// Tierra de relleno: la caja mide 1x4, así que repetimos la imagen 4 veces en vertical
-const texTierraRelleno = textureLoader.load('./src/img/texture/tierra.png');
-texTierraRelleno.wrapS = THREE.RepeatWrapping;
-texTierraRelleno.wrapT = THREE.RepeatWrapping;
-texTierraRelleno.repeat.set(1, 4);
-
-const texSueloLado = textureLoader.load('./src/img/texture/tierra-lado.png');  // lados del suelo (tierra + borde de pasto)
-const texSorpresa  = textureLoader.load('./src/img/texture/misterio.png');
-const texUsado     = textureLoader.load('./src/img/texture/vacio.png');
-const texPiedra    = textureLoader.load('./src/img/texture/roca.png');
-const texColumna   = textureLoader.load('./src/img/texture/pilar.png');
- 
-// Indicar que las imágenes están en sRGB (si no, los colores se ven lavados)
-[texTierra, texSuelo, texLadrillo, texTierraRelleno, texSueloLado,
- texSorpresa, texUsado, texPiedra, texColumna].forEach(tex => {
-    tex.colorSpace = THREE.SRGBColorSpace;
-});
- 
-// CREAR LOS MATERIALES
-const matSueloLado = new THREE.MeshLambertMaterial({ map: texSueloLado });
-const MATERIALES = {
-    // Un BoxGeometry tiene 6 caras, en este orden: [+X, -X, +Y (arriba), -Y (abajo), +Z, -Z]
-    suelo: [
-        matSueloLado,
-        matSueloLado,
-        new THREE.MeshLambertMaterial({ map: texSuelo }),   // arriba: pasto
-        new THREE.MeshLambertMaterial({ map: texTierra }),  // abajo: tierra
-        matSueloLado,
-        matSueloLado,
-    ],
-    tierra:   new THREE.MeshLambertMaterial({ map: texTierraRelleno }),
-    ladrillo: new THREE.MeshLambertMaterial({ map: texLadrillo }),
-    sorpresa: new THREE.MeshLambertMaterial({ map: texSorpresa, emissive: 0x332200 }),
-    usado:    new THREE.MeshLambertMaterial({ map: texUsado }),
-    piedra:   new THREE.MeshLambertMaterial({ map: texPiedra }),
-    columna:  new THREE.MeshLambertMaterial({ map: texColumna }),
-    gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
-};
- 
-// Reutilizamos geometrías para ahorrar memoria
-const GEO_BLOQUE = new THREE.BoxGeometry(1, 1, 1);
-const GEO_TIERRA = new THREE.BoxGeometry(1, 4, 1);
-const GEO_GEMA = new THREE.OctahedronGeometry(0.28);
- 
 function crearBloque(x, y, tipo) {
-    // Seleccionar el material según su tipo
     const material = {
         "#": MATERIALES.suelo,
         "B": MATERIALES.ladrillo,
@@ -201,7 +195,6 @@ function crearBloque(x, y, tipo) {
     grupoNivel.add(malla);
     bloques.set(clave(x, y), { x, y, tipo, malla, rebote: 0 });
  
-    // Debajo de cada bloque de suelo (#) agregamos tierra decorativa de 1x4 de altura
     if (tipo === "#") {
         const mallaTierra = new THREE.Mesh(GEO_TIERRA, MATERIALES.tierra);
         mallaTierra.position.set(x + 0.5, y - 2.0, 0);
@@ -211,10 +204,124 @@ function crearBloque(x, y, tipo) {
     }
 }
 
-// Inicializar y renderizar el bucle
-construirNivel();
+function crearGema(x, y) {
+    const malla = new THREE.Mesh(GEO_GEMA, MATERIALES.gema);
+    malla.position.set(x + 0.5, y + 0.5, 0);
+    grupoNivel.add(malla);
+    gemas.push({ malla, x, y, activa: true });
+}
+
+function crearEnemigo(x, y) {
+    const geoEnemigo = new THREE.CylinderGeometry(0.4, 0.4, 0.6, 8);
+    const matEnemigo = new THREE.MeshLambertMaterial({ color: 0xff3333 });
+    const malla = new THREE.Mesh(geoEnemigo, matEnemigo);
+    malla.position.set(x + 0.5, y + 0.3, 0);
+    grupoNivel.add(malla);
+    enemigos.push({ malla, vx: -CONFIG.VEL_ENEMIGO, x, y });
+}
+
+function crearJugador() {
+    if (jugador.malla) scene.remove(jugador.malla);
+    const geoJugador = new THREE.CapsuleGeometry(jugador.ancho / 2, jugador.alto - jugador.ancho, 4, 8);
+    const matJugador = new THREE.MeshPhongMaterial({ color: 0x2196f3 });
+    jugador.malla = new THREE.Mesh(geoJugador, matJugador);
+    jugador.malla.position.set(posicionInicial.x, posicionInicial.y + (jugador.alto / 2), 0);
+    scene.add(jugador.malla);
+    jugador.velocidad.set(0, 0, 0);
+}
+
+/* SISTEMA DE MENÚ E INICIO DEL JUEGO */
+const iniciarInterfaz = () => {
+    const boton = document.createElement('button');
+    boton.innerText = 'JUGAR';
+    boton.style.position = 'absolute';
+    boton.style.top = '50%';
+    boton.style.left = '50%';
+    boton.style.transform = 'translate(-50%, -50%)';
+    boton.style.padding = '15px 40px';
+    boton.style.fontSize = '24px';
+    boton.style.fontWeight = 'bold';
+    boton.style.cursor = 'pointer';
+    boton.style.zIndex = '100';
+    boton.style.background = '#4caf50';
+    boton.style.color = 'white';
+    boton.style.border = 'none';
+    boton.style.borderRadius = '5px';
+    document.body.appendChild(boton);
+
+    boton.addEventListener('click', () => {
+        boton.remove(); 
+        construirNivel();
+        renderer.setAnimationLoop(animate);
+    });
+};
+
+/* BUCLE PRINCIPAL DE ANIMACIÓN Y FÍSICA */
+const clock = new THREE.Clock();
 
 function animate() {
-    renderer.render(scene, camera);
+    const dt = Math.min(clock.getDelta(), 0.1); 
+
+    if (jugador.malla) {
+        // --- 1. Movimiento Horizontal ---
+        let vObjetivoX = 0;
+        if (teclas.izquierda) vObjetivoX = -CONFIG.VEL_CAMINAR;
+        if (teclas.derecha) vObjetivoX = CONFIG.VEL_CAMINAR;
+
+        const acc = vObjetivoX !== 0 ? CONFIG.ACELERACION : CONFIG.FRICCION;
+        jugador.velocidad.x = THREE.MathUtils.lerp(jugador.velocidad.x, vObjetivoX, acc * dt);
+
+        // --- 2. Gravedad ---
+        jugador.velocidad.y += CONFIG.GRAVEDAD * dt;
+        if (jugador.velocidad.y < CONFIG.VEL_MAX_CAIDA) jugador.velocidad.y = CONFIG.VEL_MAX_CAIDA;
+
+
+if (teclas.saltar && jugador.enSuelo) {
+jugador.velocidad.y = CONFIG.FUERZA_SALTO;
+jugador.enSuelo = false;
 }
-renderer.setAnimationLoop(animate);
+// --- 3. Aplicar Movimiento y Colisiones Simples ---
+jugador.malla.position.x += jugador.velocidad.x * dt;
+jugador.malla.position.y += jugador.velocidad.y * dt;
+const gx = Math.floor(jugador.malla.position.x);
+const gy = Math.floor(jugador.malla.position.y - jugador.alto / 2);
+if (bloques.has(clave(gx, gy))) {
+const blk = bloques.get(clave(gx, gy));
+if (SOLIDOS.has(blk.tipo)) {
+jugador.malla.position.y = gy + 1 + jugador.alto / 2;
+jugador.velocidad.y = 0;
+jugador.enSuelo = true;
+}
+} else {
+jugador.enSuelo = false;
+}
+if (jugador.malla.position.y < CONFIG.LIMITE_CAIDA) {
+crearJugador();
+}
+// --- 4. Seguimiento de Cámara ---
+camera.position.x = jugador.malla.position.x + 2;
+camera.position.y = THREE.MathUtils.lerp(camera.position.y, jugador.malla.position.y + 2, 5 * dt);
+}
+// --- 5. Animación de Gemas ---
+gemas.forEach(gema => {
+if (gema.activa) {
+gema.malla.rotation.y += 2 * dt;
+if (jugador.malla && jugador.malla.position.distanceTo(gema.malla.position) < 0.8) {
+grupoNivel.remove(gema.malla);
+gema.activa = false;
+}
+}
+});
+// --- 6. Animación de Enemigos ---
+enemigos.forEach(ene => {
+ene.malla.position.x += ene.vx * dt;
+const ex = Math.floor(ene.malla.position.x + (ene.vx > 0 ? 0.5 : -0.5));
+const ey = Math.floor(ene.malla.position.y);
+if (bloques.has(clave(ex, ey))) {
+ene.vx *= -1;
+}
+});
+renderer.render(scene, camera);
+}
+// Arranca mostrando la interfaz inicial
+iniciarInterfaz();

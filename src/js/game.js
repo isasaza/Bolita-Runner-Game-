@@ -1,5 +1,4 @@
-/* Bolita Saltarina - lógica de todo el juego
-   Base: código de la profesora (tilemap + Three.js)
+/* Logica de todo el juego 
 
    SISTEMA DE COORDENADAS:
     - Bloque 1x1x1
@@ -86,15 +85,14 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 });
 
-/* ================= TEXTURAS PROPIAS (dibujadas con canvas) ================= */
-function crearTextura(dibujar, repetirY = 1) {
-    const tam = 64;
-    const c = document.createElement('canvas');
-    c.width = c.height = tam;
-    dibujar(c.getContext('2d'), tam);
-    const t = new THREE.CanvasTexture(c);
+/* ================= TEXTURAS (archivos de imagen) ================= */
+const loader = new THREE.TextureLoader();
+
+function cargarTextura(url, repetirY = 1) {
+    const t = loader.load(url);
     t.colorSpace = THREE.SRGBColorSpace;
     t.magFilter = THREE.NearestFilter;          // look pixelado
+    t.minFilter = THREE.NearestFilter;
     if (repetirY > 1) {
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
         t.repeat.set(1, repetirY);
@@ -102,76 +100,32 @@ function crearTextura(dibujar, repetirY = 1) {
     return t;
 }
 
-// Salpica puntitos de colores para dar "grano" a la textura
-function motas(g, tam, colores, n, lado = 3) {
-    for (let i = 0; i < n; i++) {
-        g.fillStyle = colores[(Math.random() * colores.length) | 0];
-        g.fillRect((Math.random() * tam) | 0, (Math.random() * tam) | 0, lado, lado);
+// Rutas relativas al index.html (está al mismo nivel que la carpeta src/)
+const texPasto        = cargarTextura('src/img/texture/pasto.jpg');
+const texTierra       = cargarTextura('src/img/texture/tierra.png');
+const texTierraRelleno = cargarTextura('src/img/texture/tierra.png', 4);
+const texSueloLado    = cargarTextura('src/img/texture/tierra-lado.png');
+const texLadrillo     = cargarTextura('src/img/texture/ladrillo.jpg');
+const texSorpresa     = cargarTextura('src/img/texture/misterio.jpg');
+const texUsado        = cargarTextura('src/img/texture/muro.png');      // bloque usado
+const texPiedra       = cargarTextura('src/img/texture/roca.png');
+const texColumna      = cargarTextura('src/img/texture/pilar.png');
+
+// La bolita no tiene textura propia → se mantiene generada con canvas
+function crearTextura(dibujar, repetirY = 1) {
+    const tam = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = tam;
+    dibujar(c.getContext('2d'), tam);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.magFilter = THREE.NearestFilter;
+    if (repetirY > 1) {
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(1, repetirY);
     }
+    return t;
 }
-
-const texPasto = crearTextura((g, t) => {
-    g.fillStyle = '#4caf50'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#66bb6a', '#388e3c', '#81c784'], 120);
-});
-
-const texTierra = crearTextura((g, t) => {
-    g.fillStyle = '#8d5a2b'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#6d4120', '#a8723a', '#5a3517'], 120);
-});
-const texTierraRelleno = crearTextura((g, t) => {
-    g.fillStyle = '#8d5a2b'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#6d4120', '#a8723a', '#5a3517'], 120);
-}, 4);
-
-const texSueloLado = crearTextura((g, t) => {
-    g.fillStyle = '#8d5a2b'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#6d4120', '#a8723a'], 80);
-    g.fillStyle = '#4caf50'; g.fillRect(0, 0, t, 12);
-    for (let x = 0; x < t; x += 4) g.fillRect(x, 12, 4, (Math.random() * 8) | 0);   // pasto "goteando"
-});
-
-const texLadrillo = crearTextura((g, t) => {
-    g.fillStyle = '#c0392b'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#a93226', '#d2574a'], 60, 2);
-    g.fillStyle = '#e0c9a6';
-    for (let r = 0; r < 4; r++) {
-        g.fillRect(0, r * 16, t, 2);                       // junta horizontal
-        const off = r % 2 ? 16 : 0;
-        for (let k = 0; k < 2; k++) g.fillRect(off + k * 32, r * 16, 2, 16); // juntas verticales
-    }
-});
-
-const texSorpresa = crearTextura((g, t) => {
-    g.fillStyle = '#ffb300'; g.fillRect(0, 0, t, t);
-    g.strokeStyle = '#e65100'; g.lineWidth = 4; g.strokeRect(2, 2, t - 4, t - 4);
-    g.fillStyle = '#e65100';
-    [[6, 6], [t - 10, 6], [6, t - 10], [t - 10, t - 10]].forEach(([x, y]) => g.fillRect(x, y, 4, 4));
-    g.fillStyle = '#ffffff'; g.font = 'bold 44px sans-serif';
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText('?', t / 2, t / 2 + 2);
-});
-
-const texUsado = crearTextura((g, t) => {
-    g.fillStyle = '#8d6e63'; g.fillRect(0, 0, t, t);
-    g.strokeStyle = '#5d4037'; g.lineWidth = 4; g.strokeRect(2, 2, t - 4, t - 4);
-    g.fillStyle = '#5d4037';
-    [[6, 6], [t - 10, 6], [6, t - 10], [t - 10, t - 10]].forEach(([x, y]) => g.fillRect(x, y, 4, 4));
-});
-
-const texPiedra = crearTextura((g, t) => {
-    g.fillStyle = '#9e9e9e'; g.fillRect(0, 0, t, t);
-    motas(g, t, ['#757575', '#bdbdbd', '#8a8a8a'], 140);
-    g.strokeStyle = '#616161'; g.lineWidth = 2;
-    g.beginPath(); g.moveTo(10, 8); g.lineTo(26, 30); g.lineTo(18, 54); g.stroke();
-});
-
-const texColumna = crearTextura((g, t) => {
-    g.fillStyle = '#cfd8dc'; g.fillRect(0, 0, t, t);
-    g.fillStyle = '#90a4ae';
-    for (let x = 8; x < t; x += 16) g.fillRect(x, 0, 3, t);   // estrías
-    g.fillStyle = '#b0bec5'; g.fillRect(0, 0, t, 6); g.fillRect(0, t - 6, t, 6);
-});
 
 const texBola = crearTextura((g, t) => {
     g.fillStyle = '#ff7043'; g.fillRect(0, 0, t, t);

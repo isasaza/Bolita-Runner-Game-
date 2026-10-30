@@ -46,7 +46,9 @@ const CONFIG = {
     VEL_CORRER: 9,          // velocidad máxima con SHIFT
     ACELERACION: 40,        // qué tan rápido alcanza la velocidad máxima
     FRICCION: 30,           // qué tan rápido frena al soltar las teclas
-    FUERZA_SALTO: 15,       // velocidad vertical inicial del salto
+    FUERZA_SALTO: 13,       // velocidad vertical inicial del salto (sube ≈ 2.6 bloques)
+    MULT_CAIDA: 1.6,        // al CAER la gravedad es mayor: el salto se siente firme y no flotante
+    REBOTE_PISADA: 0.75,    // al pisar un enemigo rebota FUERZA_SALTO * este valor
     CORTE_SALTO: 0.45,      // si sueltas el botón antes, el salto se corta
     VEL_MAX_CAIDA: -20,     // límite de velocidad al caer
     TIEMPO_COYOTE: 0.1,     // gracia para saltar justo después de salir del borde
@@ -55,7 +57,7 @@ const CONFIG = {
     TIEMPO_NIVEL: 300,      // segundos para completar el nivel
     LIMITE_CAIDA: -5,       // si el jugador baja de esta Y, se cayó al vacío
     VEL_ENEMIGO: 1.5,
-    INVULNERABLE: 2.0,      // segundos de invulnerabilidad tras perder una vida
+    INVULNERABLE: 1.0,      // segundos de invulnerabilidad al reaparecer (parpadea y los enemigos no le hacen daño)
     RADIO_BOLA: 0.4,        // radio de la bolita (su caja de colisión mide el doble)
 };
 
@@ -591,6 +593,7 @@ const jugador = {
     saltando: false,
     invulnerable: 0,
     tiempoAnimacion: 0,
+    aplastar: 0,              // cuánto se aplasta la bolita al aterrizar (decae solo)
     malla: crearModeloJugador(),
 };
 scene.add(jugador.malla);
@@ -646,11 +649,17 @@ function actualizarJugador(dt) {
     if (j.vy <= 0) j.saltando = false;
 
     // --- Gravedad ---
-    j.vy += CONFIG.GRAVEDAD * dt;
+    // Al subir usa la gravedad normal; al caer es más fuerte (MULT_CAIDA)
+    const g = j.vy < 0 ? CONFIG.GRAVEDAD * CONFIG.MULT_CAIDA : CONFIG.GRAVEDAD;
+    j.vy += g * dt;
     j.vy = Math.max(j.vy, CONFIG.VEL_MAX_CAIDA);
 
     // --- Mover y resolver colisiones ---
+    const estabaEnSuelo = j.enSuelo;
+    const vyAntes = j.vy;
     moverEntidad(j, dt, golpearBloque);
+    // Si acaba de aterrizar, se aplasta un poco (más cuanto más fuerte cayó)
+    if (!estabaEnSuelo && j.enSuelo) j.aplastar = Math.min(0.3, Math.abs(vyAntes) * 0.015);
 
     // No dejar que salga por el borde izquierdo del mundo
     if (j.x < j.ancho / 2) { j.x = j.ancho / 2; j.vx = 0; }
@@ -696,8 +705,12 @@ function actualizarModeloJugador(dt) {
     // (si avanza a la derecha gira en sentido horario, por eso el signo menos)
     m.userData.bola.rotation.z -= (j.vx * dt) / CONFIG.RADIO_BOLA;
 
-    // "Squash & stretch": se estira al subir y se aplasta al caer
-    const estirar = j.enSuelo ? 1 : 1 + Math.max(-0.15, Math.min(0.15, j.vy * 0.015));
+    // "Squash & stretch": en el aire se estira según su velocidad vertical (sube o baja)
+    // y al aterrizar se aplasta un instante y recupera su forma.
+    j.aplastar = Math.max(0, j.aplastar - dt * 1.5);
+    const estirar = j.enSuelo
+        ? 1 - j.aplastar
+        : 1 + Math.min(0.15, Math.abs(j.vy) * 0.012);
     m.scale.set(2 - estirar, estirar, 2 - estirar);
 
     // Parpadeo mientras es invulnerable
@@ -756,14 +769,18 @@ function actualizarEnemigos(dt, tiempo) {
         en.vy += CONFIG.GRAVEDAD * dt;
         moverEntidad(en, dt);
 
-        // Media vuelta al chocar con una pared
-        if (en.chocoPared) en.direccion *= -1;
-
-        // Media vuelta si adelante no hay suelo (no se cae de las plataformas)
+        // Media vuelta si choca con una pared O si adelante no hay suelo (no se cae de las plataformas).
+        // Se decide una sola vez por cuadro: antes podían darse dos vueltas seguidas
+        // y el enemigo seguía de largo hacia el vacío.
+        let girar = en.chocoPared;
         if (en.enSuelo) {
             const pieDelantero = Math.floor(en.x + en.direccion * (en.ancho / 2 + 0.05));
-            if (!obtenerBloque(pieDelantero, Math.floor(en.y - 0.1))) en.direccion *= -1;
+            if (!obtenerBloque(pieDelantero, Math.floor(en.y - 0.1))) girar = true;
         }
+        if (girar) en.direccion *= -1;
+
+        // Igual que el jugador, el enemigo no puede salir por el borde izquierdo del mundo
+        if (en.x < en.ancho / 2) { en.x = en.ancho / 2; en.direccion = 1; }
 
         if (en.y < CONFIG.LIMITE_CAIDA) { en.vivo = false; en.tiempoMuerto = 0; }
 
@@ -773,14 +790,22 @@ function actualizarEnemigos(dt, tiempo) {
         en.malla.rotation.y = en.direccion * 0.6;
 
         // --- Colisión con el jugador ---
-        if (estado === 'jugando' && seSuperponen(jugador, en)) {
-            const cayendoEncima = jugador.vy < 0 && jugador.y > en.y + en.alto * 0.4;
-            if (cayendoEncima) {
-                derrotarEnemigo(en, 200);
-                jugador.vy = CONFIG.FUERZA_SALTO * 0.65;   // rebote al pisarlo
-                jugador.saltando = teclaSaltoPresionada();
-            } else if (jugador.invulnerable <= 0) {
-                perderVida(true);
+        // La bolita y el enemigo se tratan como CÍRCULOS (no como cajas): así solo hay
+        // golpe cuando realmente se tocan, sin "esquinas invisibles".
+        if (estado === 'jugando') {
+            const rBola = CONFIG.RADIO_BOLA;
+            const rEnemigo = 0.36;                              // un poco menor que el dibujo: más justo
+            const dx = jugador.x - en.x;
+            const dy = (jugador.y + rBola) - (en.y + 0.32);     // centro de la bolita - centro del enemigo
+            if (dx * dx + dy * dy < (rBola + rEnemigo) * (rBola + rEnemigo)) {
+                // Pisotón: la bolita baja y su centro está por ENCIMA del centro del enemigo
+                if (jugador.vy < 0 && dy > 0.1) {
+                    derrotarEnemigo(en, 200);
+                    jugador.vy = CONFIG.FUERZA_SALTO * CONFIG.REBOTE_PISADA;   // rebote al pisarlo
+                    jugador.saltando = teclaSaltoPresionada();
+                } else if (jugador.invulnerable <= 0) {
+                    perderVida(true);
+                }
             }
         }
     });

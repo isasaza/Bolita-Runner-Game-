@@ -1,11 +1,15 @@
 :root {
     --color-texto: #ffffff;
-    --color-acento: #ffd23f;
-    --color-boton: #ff595e;
-    --color-boton-sombra: #a8323a;
-    --fondo-pantalla: #393939;
+    --color-acento: #ffd23f;            /* amarillo */
+    --color-boton: #ffd23f;             /* botón amarillo */
+    --color-boton-sombra: #b8860b;      /* "grosor" 3D del botón */
+    --color-azul: #1e88e5;
+    --color-azul-oscuro: #0d47a1;
+    --color-azul-noche: #031a45;
+    --fondo-pantalla: radial-gradient(circle at 50% 25%, #2196f3 0%, #0d47a1 55%, #06265e 100%);
     --color-background-general: #6ec6ff;
     --fuente: 'Poppins', sans-serif;
+    --fuente-titulo: 'Lilita One', 'Arial Black', Impact, sans-serif;
 }
 
 * {
@@ -58,56 +62,194 @@ html, body {
    flex-direction: column;
    align-items: center;
    justify-content: center;
-   gap: 24px;
+   gap: 18px;
    padding: 16px;
    text-align: center;
-   background-color: var(--fondo-pantalla);
+   background: var(--fondo-pantalla);
+   overflow-y: auto;          /* si la pantalla es baja, se puede desplazar */
 }
 
+/* ---------- Títulos con letras en 3D ----------
+   El efecto 3D se logra apilando muchas sombras sin desenfoque, cada una
+   1px más abajo y a la derecha que la anterior: parece un bloque con grosor.
+   La última sombra, borrosa, simula la sombra proyectada en el piso. */
 .pantalla h1 {
-    font-size: clamp(24px, 6vw, 56px);
+    font-family: var(--fuente-titulo);
+    font-weight: 400;
+    font-size: clamp(28px, 7vw, 64px);
+    line-height: 1.15;
+    letter-spacing: 2px;
+    text-transform: uppercase;
     color: var(--color-acento);
-    text-shadow: 4px 4px 0px #000;
-    line-height: 1.3;
+    text-shadow:
+        1px 1px 0 #e6b422,
+        2px 2px 0 #d9a514,
+        3px 3px 0 #c99700,
+        4px 4px 0 #b38600,
+        5px 5px 0 #9c7500,
+        6px 6px 0 #856400,
+        7px 7px 0 #6e5300,
+        8px 8px 0 #574200,
+        10px 14px 18px rgba(0, 0, 0, 0.5);
 }
-.acento {
-    color: var(--color-boton);
+
+.titulo-3d span {
+    display: block;
+}
+
+/* Línea azul claro/blanca con grosor azul */
+.titulo-3d .linea-azul {
+    font-size: 0.6em;
+    color: #ffffff;
+    text-shadow:
+        1px 1px 0 #90caf9,
+        2px 2px 0 #64b5f6,
+        3px 3px 0 #42a5f5,
+        4px 4px 0 #2196f3,
+        5px 5px 0 #1e88e5,
+        6px 6px 0 #1976d2,
+        7px 7px 0 #1565c0,
+        8px 8px 0 #0d47a1,
+        10px 14px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* Línea amarilla grande (usa el estilo base de h1) */
+.titulo-3d .linea-amarilla {
+    font-size: 1.15em;
+}
+
+/* El título del menú flota suavemente e inclina un poco hacia atrás */
+#pantalla-inicio h1 {
+    transform: perspective(700px) rotateX(10deg);
+    animation: flotar 3.2s ease-in-out infinite;
+}
+
+@keyframes flotar {
+    0%, 100% { transform: perspective(700px) rotateX(10deg) translateY(0); }
+    50%      { transform: perspective(700px) rotateX(10deg) translateY(-7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #pantalla-inicio h1 { animation: none; }
 }
 
 .pista{
     max-width: 560px;
-    font-size: 15px;
-    line-height: 1.3;
-    opacity: 0.8;
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 0.9;
     color: var(--color-texto);
 }
 
-/* Botón de Jugar */
+/* ---------- Panel de controles ---------- */
+.controles {
+    width: min(94%, 520px);
+    padding: 14px 20px 16px;
+    background: rgba(3, 26, 69, 0.55);
+    border: 2px solid rgba(255, 210, 63, 0.65);
+    border-radius: 16px;
+    box-shadow: 0 6px 0 rgba(3, 26, 69, 0.6), 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.controles h2 {
+    font-family: var(--fuente-titulo);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-acento);
+    text-shadow: 2px 2px 0 #856400, 3px 3px 0 #574200;
+    margin-bottom: 10px;
+}
+
+.controles ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.controles li {
+    display: grid;
+    grid-template-columns: minmax(170px, 1.2fr) 1fr;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.teclas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.teclas i {
+    font-style: normal;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.accion {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.accion small {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Tecla 3D (keycap) */
+kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-family: var(--fuente);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-azul-oscuro);
+    background: linear-gradient(#fff3b0, var(--color-acento));
+    border-radius: 8px;
+    box-shadow:
+        0 4px 0 #b8860b,
+        0 6px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Botón de Jugar (amarillo con grosor 3D) */
 button {
-    padding: 12px 24px;
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--color-texto);
+    padding: 12px 32px;
+    font-family: var(--fuente-titulo);
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-azul-oscuro);
     background-color: var(--color-boton);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 4px 0 var(--color-boton-sombra);
+    box-shadow: 0 6px 0 var(--color-boton-sombra), 0 10px 16px rgba(0, 0, 0, 0.35);
     transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 0 var(--color-boton-sombra);
+    box-shadow: 0 8px 0 var(--color-boton-sombra), 0 12px 18px rgba(0, 0, 0, 0.35);
 }
 
 button:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 var(--color-boton-sombra);
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--color-boton-sombra), 0 4px 8px rgba(0, 0, 0, 0.35);
 }
 
 .subtitulo {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.8;
 }
 
@@ -134,4 +276,12 @@ button:disabled {
     opacity: 0.6;
     cursor: wait;
     transform: none;
+}
+
+/* Pantallas pequeñas: los controles se apilan */
+@media (max-width: 520px) {
+    .controles li {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
 }

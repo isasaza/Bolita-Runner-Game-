@@ -30,6 +30,7 @@
      index.html
      src/css/style.css
      src/js/game.js      ← este archivo
+     src/js/recursos.js  (copia de las imágenes como texto: respaldo si falta alguna)
      src/img/unimo-meta.png     (imagen de la pantalla final)
      src/img/texture/    cesped, tierra, tierra-lado, caja, misterio, vacio,
                          roca, tronco, arbol, pino, arbusto, roca-deco, hongo,
@@ -37,6 +38,15 @@
                          cielo, montanas, nubes   (todos .png)
    ===================================================================== */
 import * as THREE from 'three';
+
+// Respaldo de imágenes: si falta un archivo en src/img/texture/, se usa la copia de recursos.js.
+// Se importa con await import() dentro de try/catch para que el juego arranque aunque recursos.js no esté.
+let RECURSOS = {};
+try {
+    ({ RECURSOS } = await import('./recursos.js'));
+} catch (e) {
+    console.warn('No se encontró src/js/recursos.js: solo se usarán las imágenes de la carpeta texture.', e);
+}
 
 
 /* =====================================================================
@@ -205,7 +215,9 @@ manager.onLoad = () => {
 
 manager.onError = (url) => {
     // Error típico: la ruta está mal escrita o el archivo no existe.
-    console.error(`No se pudo cargar la textura: ${url}. Revisa la ruta y el nombre del archivo.`);
+    if (!url.startsWith('data:')) {
+        console.warn(`No se encontró la imagen: ${url}. Se usa la copia de recursos.js. Revisa que esté en src/img/texture/`);
+    }
 };
 
 // 2. Crear el cargador de texturas usando el manager
@@ -213,15 +225,33 @@ const textureLoader = new THREE.TextureLoader(manager);
 
 // 3. Función de ayuda: carga una imagen y la configura
 //    corregir: si la imagen no es cuadrada, muestra solo una porción cuadrada (para caras de cubos)
-function cargarTextura(archivo, { corregir = true, pixel = true } = {}) {
-    // El segundo parámetro de load() es una función que se ejecuta cuando la imagen YA llegó
-    const textura = textureLoader.load(RUTA_TEXTURAS + archivo, (tex) => {
-        if (!corregir) return;
-        // Corrección de proporción: cada cara del cubo es cuadrada (1x1).
-        const { width, height } = tex.image;
-        if (width > height) tex.repeat.set(height / width, 1);   // más ancha: recortamos en X
-        if (height > width) tex.repeat.set(1, width / height);   // más alta: recortamos en Y
-    });
+//    alCargar: función opcional que se ejecuta cuando la imagen ya está lista
+const imageLoader = new THREE.ImageLoader(manager);
+
+function cargarTextura(archivo, { corregir = true, pixel = true, alCargar } = {}) {
+    // Se ejecuta cuando la imagen YA llegó (del archivo o del respaldo)
+    const alLlegar = (tex) => {
+        if (corregir) {
+            // Corrección de proporción: cada cara del cubo es cuadrada (1x1).
+            const { width, height } = tex.image;
+            if (width > height) tex.repeat.set(height / width, 1);   // más ancha: recortamos en X
+            if (height > width) tex.repeat.set(1, width / height);   // más alta: recortamos en Y
+        }
+        if (alCargar) alCargar(tex);
+    };
+
+    // Si el archivo no existe, se carga la copia guardada en recursos.js
+    const alFallar = () => {
+        const respaldo = RECURSOS[archivo];
+        if (!respaldo) return;
+        imageLoader.load(respaldo, (imagen) => {
+            textura.image = imagen;
+            textura.needsUpdate = true;
+            alLlegar(textura);
+        });
+    };
+
+    const textura = textureLoader.load(RUTA_TEXTURAS + archivo, alLlegar, undefined, alFallar);
     // Indica que la imagen está en sRGB. Sin esto los colores se ven lavados.
     textura.colorSpace = THREE.SRGBColorSpace;
     textura.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -231,11 +261,8 @@ function cargarTextura(archivo, { corregir = true, pixel = true } = {}) {
 }
 
 // ---------- Cielo (imagen de franjas que se estira a toda la pantalla) ----------
-textureLoader.load(RUTA_TEXTURAS + 'cielo.png', (tex) => {
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.magFilter = THREE.NearestFilter;
-    scene.background = tex;
-});
+// Hasta que llega la imagen se ve el color liso de scene.background; luego se reemplaza.
+cargarTextura('cielo.png', { corregir: false, alCargar: (tex) => { scene.background = tex; } });
 
 // ---------- Texturas de los bloques ----------
 const texTierra    = cargarTextura('tierra.png');
@@ -1318,6 +1345,13 @@ const botonJugar = document.getElementById('btn-jugar');
 botonJugar.disabled = true;
 botonJugar.addEventListener('click', iniciarJuego);
 document.getElementById('btn-reiniciar').addEventListener('click', iniciarJuego);
+
+// Imagen de Unimo con la estrella: si el archivo no carga, usamos la copia de recursos.js
+if (ui.finImagen && RECURSOS['unimo-meta.png']) {
+    const usarRespaldo = () => { ui.finImagen.src = RECURSOS['unimo-meta.png']; };
+    ui.finImagen.addEventListener('error', usarRespaldo, { once: true });
+    if (ui.finImagen.complete && ui.finImagen.naturalWidth === 0) usarRespaldo();
+}
 
 
 /* =====================================================================

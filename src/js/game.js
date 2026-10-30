@@ -1,6 +1,6 @@
 /* =====================================================================
-   RUNNER GAME — Lógica de todo el juego (texturas desde imágenes)
-   VERSIÓN: bolita saltarina + texturas propias (PNG)
+   RUNNER GAME — Lógica de todo el juego
+   VERSIÓN: bolita saltarina 
 
    ÍNDICE
      1.  Configuración
@@ -41,13 +41,12 @@ import * as THREE from 'three';
    Cambiar estos números cambia cómo "se siente" el juego.
    ===================================================================== */
 const CONFIG = {
-    GRAVEDAD: -32,          // aceleración hacia abajo (unidades/segundo²)
+    GRAVEDAD: -32,          // aceleración hacia abajo 
     VEL_CAMINAR: 6,         // velocidad máxima caminando
     VEL_CORRER: 9,          // velocidad máxima con SHIFT
     ACELERACION: 40,        // qué tan rápido alcanza la velocidad máxima
     FRICCION: 30,           // qué tan rápido frena al soltar las teclas
-    FUERZA_SALTO: 15,       // velocidad vertical inicial del salto (sube ≈ 3.5 bloques). El mapa está
-                            // diseñado con este valor: las gemas altas necesitan ≈ 3.3, así que NO bajar de 15
+    FUERZA_SALTO: 20,       // velocidad vertical inicial del salto 
     MULT_CAIDA: 1.6,        // al CAER la gravedad es mayor: el salto se siente firme y no flotante
     REBOTE_PISADA: 0.75,    // al pisar un enemigo rebota FUERZA_SALTO * este valor
     CORTE_SALTO: 0.45,      // si sueltas el botón antes, el salto se corta
@@ -59,10 +58,9 @@ const CONFIG = {
     LIMITE_CAIDA: -5,       // si el jugador baja de esta Y, se cayó al vacío
     VEL_ENEMIGO: 1.5,
     INVULNERABLE: 1.0,      // segundos de invulnerabilidad al reaparecer (parpadea y los enemigos no le hacen daño)
-    RADIO_BOLA: 0.4,        // radio de la bolita (su caja de colisión mide el doble)
-    RADIO_RECOGER: 0.85,    // a qué distancia (centro a centro) la bolita toma una gema
+    RADIO_BOLA: 0.4,        // radio de la bolita 
+    RADIO_RECOGER: 0.85,    // a qué distancia la bolita toma una gema
 };
-
 
 /* =====================================================================
    2. DISEÑO DEL NIVEL (TILEMAP)
@@ -216,7 +214,7 @@ const texSorpresa  = cargarTextura('misterio.png');
 const texUsado     = cargarTextura('vacio.png');
 const texPiedra    = cargarTextura('roca.png');
 const texColumna   = cargarTextura('pilar.png');
-const texBola      = cargarTextura('bola.png');         // la bolita del jugador
+const texBola      = cargarTextura('hamster.png');         // la bolita del jugador
 
 // CREAR LOS MATERIALES
 // MeshLambertMaterial: material sencillo que reacciona a la luz.

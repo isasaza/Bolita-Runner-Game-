@@ -214,7 +214,7 @@ const texSorpresa  = cargarTextura('misterio.png');
 const texUsado     = cargarTextura('vacio.png');
 const texPiedra    = cargarTextura('roca.png');
 const texColumna   = cargarTextura('pilar.png');
-const texBola      = cargarTextura('hamster.png');         // la bolita del jugador
+const texBola      = cargarTextura('bola.png');         // la bolita del jugador
 
 // CREAR LOS MATERIALES
 // MeshLambertMaterial: material sencillo que reacciona a la luz.
@@ -240,7 +240,7 @@ const MATERIALES = {
     // La gema no usa imagen: un color brillante se ve mejor en un objeto pequeño
     gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
     // La bolita: Phong da un pequeño brillo que ayuda a ver que es una esfera
-    bola:     new THREE.MeshPhongMaterial({ map: texhamster, shininess: 60 }),
+    bola:     new THREE.MeshPhongMaterial({ map: texBola, shininess: 60 }),
 };
 
 // Reutilizamos UNA sola geometría para todos los bloques (ahorra memoria)

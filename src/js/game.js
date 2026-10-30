@@ -46,7 +46,8 @@ const CONFIG = {
     VEL_CORRER: 9,          // velocidad máxima con SHIFT
     ACELERACION: 40,        // qué tan rápido alcanza la velocidad máxima
     FRICCION: 30,           // qué tan rápido frena al soltar las teclas
-    FUERZA_SALTO: 13,       // velocidad vertical inicial del salto (sube ≈ 2.6 bloques)
+    FUERZA_SALTO: 14.5,     // velocidad vertical inicial del salto (sube ≈ 3.3 bloques; las plataformas
+                            // de la fila G B G B G están a 3 bloques, así que NO bajar de ≈ 14)
     MULT_CAIDA: 1.6,        // al CAER la gravedad es mayor: el salto se siente firme y no flotante
     REBOTE_PISADA: 0.75,    // al pisar un enemigo rebota FUERZA_SALTO * este valor
     CORTE_SALTO: 0.45,      // si sueltas el botón antes, el salto se corta

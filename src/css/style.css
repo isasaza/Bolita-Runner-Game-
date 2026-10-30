@@ -124,14 +124,6 @@ html, body {
     animation: flotar 3.2s ease-in-out infinite;
 }
 
-@keyframes flotar {
-    0%, 100% { transform: perspective(700px) rotateX(10deg) translateY(0); }
-    50%      { transform: perspective(700px) rotateX(10deg) translateY(-7px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    #pantalla-inicio h1 { animation: none; }
-}
 
 .pista{
     max-width: 560px;

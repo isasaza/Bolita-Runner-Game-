@@ -1,12 +1,13 @@
 /* =====================================================================
    RUNNER GAME — Lógica de todo el juego (texturas desde imágenes)
+   VERSIÓN: bolita saltarina + texturas propias (PNG)
 
    ÍNDICE
      1.  Configuración
      2.  Diseño del nivel (TILEMAP)
      3.  Escena, cámara, renderizador y luces
      4.  Texturas desde imágenes (TextureLoader + LoadingManager)
-     5.  Modelos 3D: jugador, enemigo, bandera
+     5.  Modelos 3D: jugador (bolita), enemigo, bandera
      6.  Construcción del nivel
      7.  Entrada del teclado
      8.  Física y colisiones
@@ -28,9 +29,9 @@
      index.html
      src/css/style.css
      src/js/game.js      ← este archivo
-     src/img/texture/    ground.jpg, pasto.jpg, ladrillo.jpg (fotos),
-                         suelo-lado.jpg, piedra.jpg, columna.jpg,
-                         sorpresa.jpg, usado.jpg
+     src/img/texture/    tierra.png, cesped.png, tierra-lado.png, muro.png,
+                         misterio.png, vacio.png, roca.png, pilar.png,
+                         bola.png
    ===================================================================== */
 import * as THREE from 'three';
 
@@ -55,6 +56,7 @@ const CONFIG = {
     LIMITE_CAIDA: -5,       // si el jugador baja de esta Y, se cayó al vacío
     VEL_ENEMIGO: 1.5,
     INVULNERABLE: 2.0,      // segundos de invulnerabilidad tras perder una vida
+    RADIO_BOLA: 0.4,        // radio de la bolita (su caja de colisión mide el doble)
 };
 
 
@@ -177,7 +179,7 @@ function cargarTextura(archivo) {
     // El segundo parámetro de load() es una función que se ejecuta cuando la imagen YA llegó
     const textura = textureLoader.load(RUTA_TEXTURAS + archivo, (tex) => {
         // Corrección de proporción: cada cara del cubo es cuadrada (1x1).
-        // Si la imagen no es cuadrada (ej. ladrillo.jpg es 1024x512), se vería
+        // Si la imagen no es cuadrada (ej. 1024x512), se vería
         // estirada. Con repeat mostramos solo una porción cuadrada de la imagen.
         const { width, height } = tex.image;
         if (width > height) tex.repeat.set(height / width, 1);   // más ancha: recortamos en X
@@ -188,27 +190,29 @@ function cargarTextura(archivo) {
     // Filtrado anisotrópico: la textura se ve nítida aunque la cara esté inclinada
     // respecto a la cámara (por ejemplo, el pasto visto desde arriba en ángulo).
     textura.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    // Para un look pixel-art se usaría: textura.magFilter = THREE.NearestFilter;
+    // Para un look pixel-art (como las texturas de 64x64) descomenta esta línea:
+    // textura.magFilter = THREE.NearestFilter;
     // Con fotos realistas dejamos el filtro por defecto (LinearFilter), que suaviza.
     return textura;
 }
 
-const texTierra    = cargarTextura('ground.jpg');
+const texTierra    = cargarTextura('tierra.png');
 // La tierra de relleno es una caja de 1x4: si usamos la imagen una sola vez,
 // se ve estirada 4 veces hacia abajo. Con RepeatWrapping + repeat(1, 4)
 // la imagen se REPITE 4 veces en vertical y conserva su proporción.
 // (El navegador guarda la imagen en caché: cargarla dos veces no la descarga dos veces.)
-const texTierraRelleno = cargarTextura('ground.jpg');
+const texTierraRelleno = cargarTextura('tierra.png');
 texTierraRelleno.wrapS = THREE.RepeatWrapping;
 texTierraRelleno.wrapT = THREE.RepeatWrapping;
 texTierraRelleno.repeat.set(1, 4);
-const texSuelo     = cargarTextura('pasto.jpg');       // parte de arriba del suelo
-const texSueloLado = cargarTextura('suelo-lado.jpg');  // lados del suelo (ground + borde de pasto)
-const texLadrillo  = cargarTextura('ladrillo.jpg');
-const texSorpresa  = cargarTextura('sorpresa.jpg');
-const texUsado     = cargarTextura('usado.jpg');
-const texPiedra    = cargarTextura('piedra.jpg');
-const texColumna   = cargarTextura('columna.jpg');
+const texSuelo     = cargarTextura('cesped.png');       // parte de arriba del suelo
+const texSueloLado = cargarTextura('tierra-lado.png');  // lados del suelo (tierra + borde de pasto)
+const texLadrillo  = cargarTextura('muro.png');
+const texSorpresa  = cargarTextura('misterio.png');
+const texUsado     = cargarTextura('vacio.png');
+const texPiedra    = cargarTextura('roca.png');
+const texColumna   = cargarTextura('pilar.png');
+const texBola      = cargarTextura('bola.png');         // la bolita del jugador
 
 // CREAR LOS MATERIALES
 // MeshLambertMaterial: material sencillo que reacciona a la luz.
@@ -233,6 +237,8 @@ const MATERIALES = {
     columna:  new THREE.MeshLambertMaterial({ map: texColumna }),
     // La gema no usa imagen: un color brillante se ve mejor en un objeto pequeño
     gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
+    // La bolita: Phong da un pequeño brillo que ayuda a ver que es una esfera
+    bola:     new THREE.MeshPhongMaterial({ map: texBola, shininess: 60 }),
 };
 
 // Reutilizamos UNA sola geometría para todos los bloques (ahorra memoria)
@@ -254,27 +260,14 @@ function pieza(geometria, material, x, y, z) {
     return malla;
 }
 
-// ---------- Jugador: "Pixel", un robot explorador ----------
+// ---------- Jugador: la bolita ----------
 function crearModeloJugador() {
-    const grupo = new THREE.Group();   // el origen del grupo está en los PIES
-    const matCuerpo = new THREE.MeshLambertMaterial({ color: 0x2ec4b6 });
-    const matOscuro = new THREE.MeshLambertMaterial({ color: 0x1b2a41 });
-    const matLuz = new THREE.MeshLambertMaterial({ color: 0xffd23f, emissive: 0x664400 });
-    const matOjo = new THREE.MeshBasicMaterial({ color: 0x7df9ff });  // Basic = no le afecta la luz
-
-    const piernaIzq = pieza(new THREE.BoxGeometry(0.16, 0.2, 0.22), matOscuro, -0.14, 0.1, 0);
-    const piernaDer = pieza(new THREE.BoxGeometry(0.16, 0.2, 0.22), matOscuro, 0.14, 0.1, 0);
-    const cuerpo = pieza(new THREE.BoxGeometry(0.6, 0.4, 0.48), matCuerpo, 0, 0.4, 0);
-    const cabeza = pieza(new THREE.BoxGeometry(0.56, 0.34, 0.5), matCuerpo, 0, 0.77, 0);
-    const visor = pieza(new THREE.BoxGeometry(0.46, 0.2, 0.04), matOscuro, 0, 0.78, 0.26);
-    const ojoIzq = pieza(new THREE.BoxGeometry(0.08, 0.1, 0.02), matOjo, -0.1, 0.79, 0.285);
-    const ojoDer = pieza(new THREE.BoxGeometry(0.08, 0.1, 0.02), matOjo, 0.1, 0.79, 0.285);
-    const antena = pieza(new THREE.CylinderGeometry(0.025, 0.025, 0.2), matOscuro, 0, 1.03, 0);
-    const foco = pieza(new THREE.SphereGeometry(0.07, 12, 12), matLuz, 0, 1.15, 0);
-    const mochila = pieza(new THREE.BoxGeometry(0.4, 0.32, 0.14), matLuz, 0, 0.42, -0.3);
-
-    grupo.add(piernaIzq, piernaDer, cuerpo, cabeza, visor, ojoIzq, ojoDer, antena, foco, mochila);
-    grupo.userData = { piernaIzq, piernaDer };   // guardamos las piernas para animarlas
+    const grupo = new THREE.Group();   // el origen del grupo está en la BASE de la bolita
+    const r = CONFIG.RADIO_BOLA;
+    // La esfera se sube "r" para que su parte de abajo toque el origen del grupo
+    const bola = pieza(new THREE.SphereGeometry(r, 24, 16), MATERIALES.bola, 0, r, 0);
+    grupo.add(bola);
+    grupo.userData = { bola };         // guardamos la esfera para hacerla rodar
     return grupo;
 }
 
@@ -586,11 +579,11 @@ function sumarGema(puntosExtra) {
 
 
 /* =====================================================================
-   10. JUGADOR
+   10. JUGADOR (LA BOLITA)
    ===================================================================== */
 const jugador = {
     x: 0, y: 0, vx: 0, vy: 0,
-    ancho: 0.7, alto: 0.9,
+    ancho: CONFIG.RADIO_BOLA * 2, alto: CONFIG.RADIO_BOLA * 2,   // caja de colisión = diámetro
     enSuelo: false,
     mirando: 1,               // 1 = derecha, -1 = izquierda
     tiempoCoyote: 0,
@@ -699,19 +692,9 @@ function actualizarModeloJugador(dt) {
     const m = j.malla;
     m.position.set(j.x, j.y, 0);
 
-    // Girar suavemente hacia donde mira (sin llegar a 90° para que se vea la cara)
-    const anguloObjetivo = j.mirando * 0.9;
-    m.rotation.y += (anguloObjetivo - m.rotation.y) * Math.min(1, 12 * dt);
-
-    // Animación de caminar: las piernas suben y bajan con una función seno
-    const { piernaIzq, piernaDer } = m.userData;
-    if (j.enSuelo && Math.abs(j.vx) > 0.5) {
-        j.tiempoAnimacion += dt * Math.abs(j.vx) * 2.2;
-        piernaIzq.position.y = 0.1 + Math.max(0, Math.sin(j.tiempoAnimacion)) * 0.08;
-        piernaDer.position.y = 0.1 + Math.max(0, -Math.sin(j.tiempoAnimacion)) * 0.08;
-    } else {
-        piernaIzq.position.y = piernaDer.position.y = 0.1;
-    }
+    // La bolita RUEDA: el giro es la distancia recorrida dividida entre el radio
+    // (si avanza a la derecha gira en sentido horario, por eso el signo menos)
+    m.userData.bola.rotation.z -= (j.vx * dt) / CONFIG.RADIO_BOLA;
 
     // "Squash & stretch": se estira al subir y se aplasta al caer
     const estirar = j.enSuelo ? 1 : 1 + Math.max(-0.15, Math.min(0.15, j.vy * 0.015));

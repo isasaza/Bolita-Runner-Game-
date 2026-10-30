@@ -46,7 +46,7 @@ const CONFIG = {
     VEL_CORRER: 9,          // velocidad máxima con SHIFT
     ACELERACION: 40,        // qué tan rápido alcanza la velocidad máxima
     FRICCION: 30,           // qué tan rápido frena al soltar las teclas
-    FUERZA_SALTO: 20,       // velocidad vertical inicial del salto 
+    FUERZA_SALTO: 16,       // velocidad vertical inicial del salto 
     MULT_CAIDA: 1.6,        // al CAER la gravedad es mayor: el salto se siente firme y no flotante
     REBOTE_PISADA: 0.75,    // al pisar un enemigo rebota FUERZA_SALTO * este valor
     CORTE_SALTO: 0.45,      // si sueltas el botón antes, el salto se corta
@@ -262,7 +262,7 @@ function pieza(geometria, material, x, y, z) {
     return malla;
 }
 
-// ---------- Jugador: la bolita ----------
+// ---------- la bolita ----------
 function crearModeloJugador() {
     const grupo = new THREE.Group();   // el origen del grupo está en la BASE de la bolita
     const r = CONFIG.RADIO_BOLA;

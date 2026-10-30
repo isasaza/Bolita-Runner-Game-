@@ -46,8 +46,8 @@ const CONFIG = {
     VEL_CORRER: 9,          // velocidad máxima con SHIFT
     ACELERACION: 40,        // qué tan rápido alcanza la velocidad máxima
     FRICCION: 30,           // qué tan rápido frena al soltar las teclas
-    FUERZA_SALTO: 14.5,     // velocidad vertical inicial del salto (sube ≈ 3.3 bloques; las plataformas
-                            // de la fila G B G B G están a 3 bloques, así que NO bajar de ≈ 14)
+    FUERZA_SALTO: 15,       // velocidad vertical inicial del salto (sube ≈ 3.5 bloques). El mapa está
+                            // diseñado con este valor: las gemas altas necesitan ≈ 3.3, así que NO bajar de 15
     MULT_CAIDA: 1.6,        // al CAER la gravedad es mayor: el salto se siente firme y no flotante
     REBOTE_PISADA: 0.75,    // al pisar un enemigo rebota FUERZA_SALTO * este valor
     CORTE_SALTO: 0.45,      // si sueltas el botón antes, el salto se corta
@@ -60,6 +60,7 @@ const CONFIG = {
     VEL_ENEMIGO: 1.5,
     INVULNERABLE: 1.0,      // segundos de invulnerabilidad al reaparecer (parpadea y los enemigos no le hacen daño)
     RADIO_BOLA: 0.4,        // radio de la bolita (su caja de colisión mide el doble)
+    RADIO_RECOGER: 0.85,    // a qué distancia (centro a centro) la bolita toma una gema
 };
 
 
@@ -672,8 +673,12 @@ function actualizarJugador(dt) {
     }
 
     // --- Recoger gemas ---
+    // La distancia se mide entre el centro de la bolita y el de la gema (círculos),
+    // con un radio generoso para que las gemas altas sean fáciles de tomar.
     gemas.forEach(g => {
-        if (!g.recogida && seSuperponen(j, { x: g.x + 0.5, y: g.y + 0.15, ancho: 0.6, alto: 0.7 })) {
+        const dx = j.x - (g.x + 0.5);
+        const dy = (j.y + CONFIG.RADIO_BOLA) - (g.y + 0.5);
+        if (!g.recogida && dx * dx + dy * dy < CONFIG.RADIO_RECOGER * CONFIG.RADIO_RECOGER) {
             g.recogida = true;
             grupoNivel.remove(g.malla);
             sumarGema(100);

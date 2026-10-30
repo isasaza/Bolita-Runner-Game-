@@ -240,7 +240,7 @@ const MATERIALES = {
     // La gema no usa imagen: un color brillante se ve mejor en un objeto pequeño
     gema:     new THREE.MeshPhongMaterial({ color: 0x26c6da, emissive: 0x0b5560, shininess: 100 }),
     // La bolita: Phong da un pequeño brillo que ayuda a ver que es una esfera
-    bola:     new THREE.MeshPhongMaterial({ map: texBola, shininess: 60 }),
+    bola:     new THREE.MeshPhongMaterial({ map: texhamster, shininess: 60 }),
 };
 
 // Reutilizamos UNA sola geometría para todos los bloques (ahorra memoria)

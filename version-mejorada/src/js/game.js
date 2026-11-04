@@ -140,7 +140,7 @@ const COLOR_CIELO = 0x6ec6ff;
 // Crear escena principal.
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(COLOR_CIELO);
+scene.background = null;
 scene.fog = null;
 
 
@@ -157,9 +157,10 @@ camera.position.set(5, 5, 14);
 
 // Renderizador de Three.js.
 const renderer = new THREE.WebGLRenderer({
-    antialias: true
+    antialias: true,
+    alpha: true
 });
-
+renderer.setClearColor(0x000000,0);
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
@@ -320,96 +321,6 @@ aplicarTextura(
 );
 
 
-/* =====================================================================
-   FONDO DEL JUEGO
-
-   Usamos tres capas:
-   1. Cielo
-   2. Montañas
-   3. Nubes
-
-   Las capas son decorativas y no producen colisiones.
-   ===================================================================== */
-
-const fondos = [];
-
-function agregarFondo(nombre, z, alto, ancho, opacidad) {
-
-    cargadorTexturas.load(
-        RUTA_TEXTURAS + nombre,
-
-        textura => {
-
-            textura.colorSpace = THREE.SRGBColorSpace;
-
-            const malla = new THREE.Mesh(
-
-                new THREE.PlaneGeometry(
-                    ancho,
-                    alto
-                ),
-
-                new THREE.MeshBasicMaterial({
-                    map: textura,
-                    transparent: true,
-                    opacity: opacidad,
-                    depthWrite: false,
-                    side: THREE.DoubleSide
-                })
-            );
-
-            malla.position.set(
-                0,
-                alto / 2 - 2,
-                z
-            );
-
-            scene.add(malla);
-
-            fondos.push({
-                malla,
-                z
-            });
-        },
-
-        undefined,
-
-        () => {
-            console.warn(
-                'Fondo opcional no encontrado:',
-                nombre
-            );
-        }
-    );
-}
-
-
-// Cargar las tres capas.
-agregarFondo(
-    'cielo.png',
-    -55,
-    32,
-    100,
-    1
-);
-
-agregarFondo(
-    'montanas.png',
-    -45,
-    24,
-    90,
-    0.95
-);
-
-agregarFondo(
-    'nubes.png',
-    -35,
-    23,
-    90,
-    0.85
-);
-
-
 // Mantiene el fondo siguiendo la cámara.
 function actualizarFondo() {
 
@@ -439,12 +350,26 @@ function agregarDecoracion(
     alto
 ) {
 
+    const grupoDestino = grupoNivel;
+
     cargadorTexturas.load(
+
         RUTA_TEXTURAS + nombre,
 
-        textura => {
+        function(textura) {
 
             textura.colorSpace = THREE.SRGBColorSpace;
+            textura.magFilter = THREE.NearestFilter;
+
+            const materialDeco =
+                new THREE.MeshBasicMaterial({
+
+                    map: textura,
+                    transparent: true,
+                    alphaTest: 0.08,
+                    depthWrite: false,
+                    side: THREE.DoubleSide
+                });
 
             const malla = new THREE.Mesh(
 
@@ -453,33 +378,46 @@ function agregarDecoracion(
                     alto
                 ),
 
-                new THREE.MeshBasicMaterial({
-                    map: textura,
-                    transparent: true,
-                    alphaTest: 0.08,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
-                })
+                materialDeco
             );
 
+            // Los árboles tienen un pequeño ajuste
+            // adicional para apoyar su tronco.
+            const ajusteBase =
+                nombre === 'arbol.png' ||
+                nombre === 'pino.png'
+                    ? 0.45
+                    : 0.12;
+
+            // Acercar los elementos al plano del jugador.
             malla.position.set(
                 x,
-                y + alto / 2,
-                -2.5
+                y + alto / 2 - ajusteBase,
+                0.12
             );
 
-            grupoNivel.add(malla);
+            // Evitar añadir imágenes a un nivel anterior.
+            if (grupoDestino !== grupoNivel) {
+                malla.geometry.dispose();
+                malla.material.dispose();
+                return;
+            }
+
+            grupoDestino.add(malla);
 
             decoraciones.push(malla);
         },
 
         undefined,
 
-        () => {}
+        function() {
+            console.warn(
+                'No se pudo cargar:',
+                nombre
+            );
+        }
     );
 }
-
-
 /* =====================================================================
    FRUTA ESTELAR Y GEMAS
 

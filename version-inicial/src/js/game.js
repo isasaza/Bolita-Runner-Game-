@@ -3324,77 +3324,43 @@ let temporizadorFinal = null;
 
 function iniciarJuego() {
 
-
+    // Reiniciar los valores de la partida.
     vidas = CONFIG.VIDAS_INICIALES;
-
     puntos = 0;
 
-    tiempoRestante =
-        CONFIG.TIEMPO_NIVEL;
-
+    tiempoRestante = CONFIG.TIEMPO_NIVEL;
     tiempoMuerte = 0;
 
-    //cancela pantallas 
-    clearTimeout(
-        temporizadorFinal
-    );
+    // Cancelar mensajes anteriores.
+    clearTimeout(temporizadorFinal);
+    clearTimeout(temporizadorAviso);
 
-    clearTimeout(
-        temporizadorAviso
-    );
-//reconstruir mapa
-
+    // Reconstruir el mapa con sus texturas.
     construirNivel();
 
-
-}//coloca al jugador en el inicio
-
+    // Colocar a Junimo en su posicion inicial.
     reaparecerJugador();
 
-
-    // 0 invulnerable cuando inicia 
+    // Desactivar invulnerabilidad inicial.
     jugador.invulnerable = 0;
 
+    // Restaurar la camara.
+    camera.position.set(8, 4.5, 14);
 
-    // Posicion inicial de camara.
-    camera.position.set(
-        8,
-        4.5,
-        14
-    );
+    // Ocultar la pantalla de bienvenida.
+    mostrarPantalla(ui.inicio, false);
 
-//oculta pantallas
+    // Ocultar las demas pantallas.
+    mostrarPantalla(ui.fin, false);
+    mostrarPantalla(ui.pausa, false);
+    mostrarPantalla(ui.aviso, false);
 
-    mostrarPantalla(
-        ui.inicio,
-        false
-    );
-
-    mostrarPantalla(
-        ui.fin,
-        false
-    );
-
-    mostrarPantalla(
-        ui.pausa,
-        false
-    );
-
-    mostrarPantalla(
-        ui.aviso,
-        false
-    );
-
-
-    // Cambiar estado
+    // Cambiar al estado de juego.
     estado = 'jugando';
 
-
-    // Actualizar indicadores
+    // Actualizar vidas, puntos y tiempo.
     actualizarHUD();
-
-
-
+}
 // pausa o reanudar el juego
 
 function alternarPausa() {

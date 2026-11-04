@@ -321,16 +321,9 @@ aplicarTextura(
 );
 
 
-/* =====================================================================
-   FONDO DEL JUEGO
-
-   Usamos tres capas:
-   1. Cielo
-   2. Montañas
-   3. Nubes
-
-   Las capas son decorativas y no producen colisiones.
-   ===================================================================== */
+/* =========================================================
+   FONDO AJUSTADO A LA PANTALLA
+   ========================================================= */
 
 const fondos = [];
 
@@ -343,41 +336,45 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 
             textura.colorSpace = THREE.SRGBColorSpace;
 
-            const malla = new THREE.Mesh(
-
-                new THREE.PlaneGeometry(
-                    ancho,
-                    alto
-                ),
-
+            const materialFondo =
                 new THREE.MeshBasicMaterial({
                     map: textura,
                     transparent: true,
                     opacity: opacidad,
                     depthWrite: false,
+                    depthTest: false,
                     side: THREE.DoubleSide
-                })
+                });
+
+            const malla = new THREE.Mesh(
+                new THREE.PlaneGeometry(1, 1),
+                materialFondo
             );
 
-            malla.position.set(
-                0,
-                5,
-                z
-            );
+            // El fondo queda fijo respecto a la cámara.
+            camera.add(malla);
 
-            scene.add(malla);
+            // Distancia desde la cámara.
+            malla.position.set(0, 0, -20);
+
+            // Evitar que el fondo desaparezca
+            // por los límites de visibilidad.
+            malla.frustumCulled = false;
 
             fondos.push({
                 malla,
-                z
+                z,
+                nombre
             });
+
+            actualizarFondo();
         },
 
         undefined,
 
         () => {
             console.warn(
-                'Fondo opcional no encontrado:',
+                'No se pudo cargar:',
                 nombre
             );
         }
@@ -385,30 +382,45 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 }
 
 
-// Cargar las tres capas.
-agregarFondo(
-    'cielo.png',
-    -55,
-    35,
-    100,
-    1
-);
+// Asegurar que la cámara forme parte de la escena.
+scene.add(camera);
 
-agregarFondo(
-    'montanas.png',
-    -45,
-    20,
-    100,
-    1
-);
 
-agregarFondo(
-    'nubes.png',
-    -35,
-    20,
-    100,
-    1
-);
+/* =========================================================
+   AJUSTAR EL FONDO AL TAMAÑO VISIBLE
+   ========================================================= */
+
+function actualizarFondo() {
+
+    const distancia = 20;
+
+    const alturaVisible =
+        2 *
+        Math.tan(
+            THREE.MathUtils.degToRad(camera.fov / 2)
+        ) *
+        distancia;
+
+    const anchuraVisible =
+        alturaVisible * camera.aspect;
+
+
+    fondos.forEach(f => {
+
+        f.malla.scale.set(
+            anchuraVisible * 1.02,
+            alturaVisible * 1.02,
+            1
+        );
+
+        f.malla.position.set(
+            0,
+            0,
+            -distancia
+        );
+    });
+}
+agregarFondo('cielo.png', -55, 35,100,1);
 
 
 // Mantiene el fondo siguiendo la cámara.
@@ -2988,7 +3000,7 @@ function actualizarCamara(dt) {
         suavizado;
 
 
-    camera.position.z = 10;
+    camera.position.z = 14;
 
 
     camera.lookAt(

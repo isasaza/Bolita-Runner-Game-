@@ -175,7 +175,7 @@ window.addEventListener('resize', () => {
     camera.aspect =
         window.innerWidth / window.innerHeight;
 
-    actualizarFondo();
+    camera.updateProjectionMatrix();
 });
 
 // Una luz ambiental ilumina la escena de forma general.
@@ -450,7 +450,7 @@ function crearBloque(x, y, tipo) {
             MATERIALES.tierra
         );
 
-        tierra.position.set(x + 0.5, y - 1, 0);
+        tierra.position.set(x + 0.5, y - 2, 0);
         tierra.receiveShadow = true;
 
         grupoNivel.add(tierra);
@@ -1155,7 +1155,6 @@ function actualizarMuerte(dt) {
         }
     }
 }
-
 /* =====================================================================
    11. ENEMIGOS
 

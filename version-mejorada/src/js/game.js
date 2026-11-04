@@ -1,5 +1,5 @@
 /* =====================================================================
-   JUNIMO RUNNER — VERSIÓN MEJORADA
+   JUNIMO RUNNER MEJORADO
 
    1. Configuración
    2. Diseño del nivel
@@ -54,7 +54,7 @@ const CONFIG = {
 
     RADIO_BOLA: 0.4,
 
-    // Movimiento de Junimo sobre las rampas.
+    // Movimiento de Junimo rodando en la montaña
     G_RAMPA: 30,
     VEL_RODAR: 13,
     FRICCION_RODAR: 5
@@ -64,7 +64,6 @@ const CONFIG = {
 /* =====================================================================
    2. DISEÑO DEL NIVEL (TILEMAP)
 
-   Cada carácter representa una casilla de 1x1.
 
    BLOQUES:
    # = Suelo con pasto
@@ -106,7 +105,7 @@ const SOLIDOS = new Set([
 ]);
 
 
-// Rampas del escenario.
+// Rampa
 const RAMPAS = [
     {
         x0: 71,
@@ -117,7 +116,7 @@ const RAMPAS = [
 ];
 
 
-// Estanques del escenario.
+// agua
 const ESTANQUES = [
     {
         x0: 36,
@@ -134,10 +133,10 @@ const ESTANQUES = [
    3. ESCENA, CÁMARA, RENDERIZADOR Y LUCES
    ===================================================================== */
 
-// Color de respaldo del cielo.
+
 const COLOR_CIELO = 0x6ec6ff;
 
-// Crear escena principal.
+// Crear escena principal
 const scene = new THREE.Scene();
 
 scene.background = null;
@@ -155,7 +154,6 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(5, 5, 14);
 
 
-// Renderizador de Three.js.
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true
@@ -170,15 +168,10 @@ renderer.setPixelRatio(
     Math.min(window.devicePixelRatio, 2)
 );
 
-// Activar sombras.
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Añadir el canvas 3D al documento.
 document.body.appendChild(renderer.domElement);
-
-
-// Adaptar el juego al tamaño de la ventana.
 window.addEventListener('resize', () => {
 
     renderer.setSize(
@@ -193,7 +186,7 @@ window.addEventListener('resize', () => {
 });
 
 
-// Luz ambiental.
+// Luz ambiental
 const luzAmbiente = new THREE.HemisphereLight(
     0xffffff,
     0x7caa5c,
@@ -203,7 +196,7 @@ const luzAmbiente = new THREE.HemisphereLight(
 scene.add(luzAmbiente);
 
 
-// Luz direccional que simula el sol.
+// Luz direccional 
 const luzSol = new THREE.DirectionalLight(
     0xffffff,
     2.6
@@ -225,14 +218,8 @@ scene.add(luzSol);
 scene.add(luzSol.target);
 /* =====================================================================
    4. MATERIALES Y GEOMETRÍAS
-
-   Los materiales dan color y textura a los objetos 3D.
-   Usaremos las imágenes originales de la carpeta texture.
-
-   No necesitamos recursos.js.
    ===================================================================== */
 
-// Función para crear materiales de color.
 const material = color =>
     new THREE.MeshLambertMaterial({ color });
 
@@ -248,14 +235,8 @@ const MATERIALES = {
     rampaPasto: material(0x48a942)
 };
 
-
 /* =====================================================================
-   CARGA DE TEXTURAS
-
-   Las imágenes están en:
-   version-mejorada/src/img/texture/
-
-   Si falta alguna imagen, se conserva el color de respaldo.
+TEXTURAS
    ===================================================================== */
 
 const RUTA_TEXTURAS = './src/img/texture/';
@@ -288,7 +269,7 @@ function aplicarTextura(nombre, materialDestino) {
 }
 
 
-// Texturas de bloques, suelo y rampas.
+// Texturas de bloques suelo y rampas
 [
     ['cesped.png', MATERIALES.suelo],
     ['tierra.png', MATERIALES.tierra],
@@ -304,10 +285,10 @@ function aplicarTextura(nombre, materialDestino) {
 });
 
 
-// Material de las cajas misteriosas.
+// Material de las cajas misteriosas
 MATERIALES.misterio = material(0xf5b62d);
 
-// Material de las cajas después de entregar el premio.
+// Material de las cajas después de entregar el premio
 MATERIALES.usado = material(0x88898d);
 
 aplicarTextura(
@@ -320,15 +301,6 @@ aplicarTextura(
     MATERIALES.usado
 );
 
-
-/* =====================================================================
-   FONDO CON PARALLAX
-
-   Dos capas HTML detrás del canvas (transparente):
-   - #fondo-montanas: lejanas, se mueven poco.
-   - #fondo-nubes: se mueven más con la cámara y además derivan solas.
-   ===================================================================== */
-
 const capaMontanas = document.getElementById('fondo-montanas');
 const capaNubes = document.getElementById('fondo-nubes');
 
@@ -336,16 +308,16 @@ let derivaNubes = 0;
 
 function actualizarFondo(dt = 0) {
 
-    // Las nubes avanzan solas, aunque Junimo esté quieto.
+    // Las nubes avanzan 
     derivaNubes += 15 * dt;
 
     const x = camera.position.x;
 
-    // Montañas: lejanas, se mueven poco.
+    // Montaña
     capaMontanas.style.backgroundPositionX =
         `${-x * 6}px`;
 
-    // Nubes: se mueven con la cámara y además derivan.
+    // Nube
     capaNubes.style.backgroundPositionX =
         `${-x * 18 - derivaNubes}px`;
 }
@@ -356,8 +328,7 @@ function actualizarFondo(dt = 0) {
 
    Árboles, pinos, arbustos, flores y hongos.
 
-   No tienen colisiones:
-   Junimo puede pasar por delante de ellos.
+   No tienen colisiones
    ===================================================================== */
 
 const decoraciones = [];
@@ -401,22 +372,20 @@ function agregarDecoracion(
                 materialDeco
             );
 
-            // Los árboles tienen un pequeño ajuste
-            // adicional para apoyar su tronco.
             const ajusteBase =
                 nombre === 'arbol.png' ||
                 nombre === 'pino.png'
                     ? 0.45
                     : 0.12;
 
-            // Acercar los elementos al plano del jugador.
+            // Acercar los elementos al plano del jugador
             malla.position.set(
                 x,
                 y + alto / 2 - ajusteBase,
                 0.12
             );
 
-            // Evitar añadir imágenes a un nivel anterior.
+            
             if (grupoDestino !== grupoNivel) {
                 malla.geometry.dispose();
                 malla.material.dispose();
@@ -440,9 +409,6 @@ function agregarDecoracion(
 }
 /* =====================================================================
    FRUTA ESTELAR Y GEMAS
-
-   La fruta aparece al golpear una caja misteriosa.
-   Las gemas se recogen para ganar puntos.
    ===================================================================== */
 
 const materialEstrella =
@@ -458,7 +424,7 @@ aplicarTextura(
 );
 
 
-// Geometría de la fruta estelar.
+// Geometría de la fruta estelar
 const GEO_ESTRELLA =
     new THREE.PlaneGeometry(
         0.9,
@@ -466,20 +432,18 @@ const GEO_ESTRELLA =
     );
 
 
-// Geometría de las gemas.
+// Geometría de la gema
 const GEO_GEMA =
     new THREE.OctahedronGeometry(0.25);
 
 
-// Material azul brillante para las gemas.
+// Material para las gemas
 const materialGema =
     new THREE.MeshLambertMaterial({
         color: 0x34ddff,
         emissive: 0x063b55
     });
 
-
-// Geometrías reutilizables para los bloques.
 const GEO_BLOQUE =
     new THREE.BoxGeometry(1, 1, 1);
 
@@ -491,16 +455,14 @@ const GEO_TIERRA =
    5. MODELOS 3D
 
    Crearemos:
-   - Junimo verde con rostro y extremidades
-   - Enemigos rojos con ojos
+   - Junimo
+   - Enemigos 
    - Banderas para checkpoint y meta
    ===================================================================== */
 
 const R_CUERPO = 0.38;
 const Y_CENTRO = 0.4;
 
-
-// Crea una pieza 3D y la coloca en su posición.
 function pieza(geometria, materialPieza, x, y, z) {
 
     const malla = new THREE.Mesh(
@@ -514,18 +476,15 @@ function pieza(geometria, materialPieza, x, y, z) {
     return malla;
 }
 
-
 /* =====================================================================
-   PERSONAJE JUNIMO
-
-   El personaje está construido con varias figuras 3D.
+   JUGADOR JUNIMO
    ===================================================================== */
 
 function crearModeloJugador() {
 
     const grupo = new THREE.Group();
 
-    // Materiales del personaje.
+    // junimo
     const matCuerpo =
         new THREE.MeshLambertMaterial({
             color: 0x0cc510
@@ -557,13 +516,13 @@ function crearModeloJugador() {
         });
 
 
-    // Grupo que permite rotar el cuerpo.
+    // rotar jugador
     const cuerpoRot = new THREE.Group();
 
     cuerpoRot.position.y = Y_CENTRO;
 
 
-    // Cuerpo principal.
+    // Cuerpo principal
     cuerpoRot.add(
         pieza(
             new THREE.SphereGeometry(
@@ -576,8 +535,6 @@ function crearModeloJugador() {
         )
     );
 
-
-    // Parte superior verde clara.
     cuerpoRot.add(
         pieza(
             new THREE.SphereGeometry(
@@ -595,7 +552,6 @@ function crearModeloJugador() {
     );
 
 
-    // Centro superior oscuro.
     cuerpoRot.add(
         pieza(
             new THREE.SphereGeometry(
@@ -613,7 +569,7 @@ function crearModeloJugador() {
     );
 
 
-    // Tallito de la cabeza.
+    // Tallito de la cabeza
     cuerpoRot.add(
         pieza(
             new THREE.CylinderGeometry(
@@ -630,7 +586,7 @@ function crearModeloJugador() {
     );
 
 
-    // Hoja de la cabeza.
+    // Hoja de la cabeza
     const hoja = pieza(
         new THREE.BoxGeometry(
             0.15,
@@ -647,7 +603,7 @@ function crearModeloJugador() {
     cuerpoRot.add(hoja);
 
 
-    // Ojo izquierdo.
+    // Ojo izquierdo
     cuerpoRot.add(
         pieza(
             new THREE.BoxGeometry(
@@ -663,7 +619,7 @@ function crearModeloJugador() {
     );
 
 
-    // Ojo derecho.
+    // Ojo derecho
     cuerpoRot.add(
         pieza(
             new THREE.BoxGeometry(
@@ -679,7 +635,7 @@ function crearModeloJugador() {
     );
 
 
-    // Mejilla izquierda.
+    // Mejilla izquierda
     cuerpoRot.add(
         pieza(
             new THREE.BoxGeometry(
@@ -695,7 +651,7 @@ function crearModeloJugador() {
     );
 
 
-    // Mejilla derecha.
+    // Mejilla derecha
     cuerpoRot.add(
         pieza(
             new THREE.BoxGeometry(
@@ -711,7 +667,7 @@ function crearModeloJugador() {
     );
 
 
-    // Boca pequeña.
+    // Boca
     cuerpoRot.add(
         pieza(
             new THREE.BoxGeometry(
@@ -733,7 +689,7 @@ function crearModeloJugador() {
        BRAZOS Y PIERNAS
 
        Cada extremidad tiene un pivote.
-       Así podremos animarla cuando Junimo camine.
+       y se aplica una animacion para cuando este caminando
        ------------------------------------------------------------- */
 
     const extremidades = new THREE.Group();
@@ -827,7 +783,7 @@ function crearModeloJugador() {
     }
 
 
-    // Crear las cuatro extremidades.
+    // extremidades
     const armIzq = brazo(-1);
     const armDer = brazo(1);
 
@@ -844,7 +800,7 @@ function crearModeloJugador() {
     grupo.add(extremidades);
 
 
-    // Guardar referencias para las animaciones.
+    // animaciones.
     grupo.userData = {
         cuerpoRot,
         extremidades,
@@ -857,18 +813,15 @@ function crearModeloJugador() {
     return grupo;
 }
 
-
 /* =====================================================================
-   ENEMIGOS ROJOS CON OJOS
-
-   Son esferas 3D que se moverán por las plataformas.
+   ENEMIGOS
    ===================================================================== */
 
 function crearModeloEnemigo() {
 
     const grupo = new THREE.Group();
 
-    // Cuerpo rojo.
+    // Cuerpo 
     const esfera = new THREE.Mesh(
         new THREE.SphereGeometry(
             0.35,
@@ -883,20 +836,20 @@ function crearModeloEnemigo() {
     grupo.add(esfera);
 
 
-    // Material blanco de los ojos.
+    // ojos
     const blanco =
         new THREE.MeshBasicMaterial({
             color: 0xffffff
         });
 
-    // Material negro de las pupilas.
+    // pupilas
     const negro =
         new THREE.MeshBasicMaterial({
             color: 0x161616
         });
 
 
-    // Crear dos ojos.
+    // crear ojos
     for (const x of [-0.13, 0.13]) {
 
         const ojo = new THREE.Mesh(
@@ -917,7 +870,7 @@ function crearModeloEnemigo() {
         grupo.add(ojo);
 
 
-        // Pupila negra.
+        // Pupila negra
         const pupila = new THREE.Mesh(
             new THREE.SphereGeometry(
                 0.043,
@@ -939,13 +892,10 @@ function crearModeloEnemigo() {
     return grupo;
 }
 
-
 /* =====================================================================
    BANDERAS
-
-   Conservamos las dos banderas:
-   - Punto de control
-   - Meta final
+   Punto de control
+ Meta
    ===================================================================== */
 
 function crearBandera(color) {
@@ -953,7 +903,7 @@ function crearBandera(color) {
     const grupo = new THREE.Group();
 
 
-    // Poste metálico.
+    // Poste
     const poste = new THREE.Mesh(
         new THREE.CylinderGeometry(
             0.045,
@@ -969,7 +919,7 @@ function crearBandera(color) {
     grupo.add(poste);
 
 
-    // Forma triangular de la bandera.
+    // bandera en triangulo
     const forma = new THREE.Shape();
 
     forma.moveTo(0, 0);
@@ -978,7 +928,7 @@ function crearBandera(color) {
     forma.closePath();
 
 
-    // Tela de la bandera.
+    // Tela?
     const tela = new THREE.Mesh(
         new THREE.ShapeGeometry(forma),
         new THREE.MeshBasicMaterial({
@@ -996,22 +946,13 @@ function crearBandera(color) {
     grupo.add(tela);
 
 
-    // Referencia para cambiar su color y animarla.
+    // Referencia para cambi color y animación
     grupo.userData.tela = tela;
 
     return grupo;
 }
 /* =====================================================================
    6. CONSTRUCCIÓN DEL NIVEL
-
-   Recorremos el mapa de texto y creamos un objeto por cada carácter.
-
-   Los bloques sólidos se guardan en un Map con la clave "x,y"
-   para encontrarlos rápidamente al calcular colisiones.
-
-   IMPORTANTE:
-   construirNivel() se llama al iniciar la partida,
-   nunca dentro de animate().
    ===================================================================== */
 
 let grupoNivel = null,
@@ -1024,7 +965,7 @@ let grupoNivel = null,
     banderaMeta = null;
 
 
-// Genera una clave única para cada posición del mapa.
+// Genera una clave única para cada posición del mapa
 const clave = (x, y) => x + "," + y;
 
 
@@ -1034,18 +975,18 @@ const clave = (x, y) => x + "," + y;
 
 function construirNivel() {
 
-    // Eliminar el escenario anterior.
+    // Eliminar el escenario anterior
     if (grupoNivel) {
         scene.remove(grupoNivel);
     }
 
-    // Crear el grupo que contendrá todos los objetos.
+    // Crear el grupo que contendrá todos los objetos
     grupoNivel = new THREE.Group();
 
     scene.add(grupoNivel);
 
 
-    // Reiniciar los elementos del escenario.
+    // Reiniciar los elementos del escenario
     bloques = new Map();
     enemigos = [];
     gemas = [];
@@ -1057,19 +998,16 @@ function construirNivel() {
     decoraciones.length = 0;
 
 
-    // Construir las rampas y los estanques.
+    // Construir las rampas y los estanques
     RAMPAS.forEach(crearRampa);
     ESTANQUES.forEach(crearEstanque);
 
 
     /* -------------------------------------------------------------
        DECORACIÓN
-
-       Los árboles, pinos y flores son elementos visuales.
-       No modifican las colisiones del mapa.
        ------------------------------------------------------------- */
 
-    // Árboles y pinos.
+    // Árboles y pinos
     [8, 24, 43, 91, 116, 151, 172].forEach((x, i) => {
 
         agregarDecoracion(
@@ -1082,7 +1020,7 @@ function construirNivel() {
     });
 
 
-    // Arbustos.
+    // Arbustos
     [14, 32, 106, 132, 164].forEach(x => {
 
         agregarDecoracion(
@@ -1095,7 +1033,7 @@ function construirNivel() {
     });
 
 
-    // Flores y margaritas.
+    // Flores y margaritas
     [6, 19, 33, 88, 105, 128, 158].forEach((x, i) => {
 
         agregarDecoracion(
@@ -1108,7 +1046,7 @@ function construirNivel() {
     });
 
 
-    // Hongos.
+    // Hongos
     [26, 114, 147].forEach(x => {
 
         agregarDecoracion(
@@ -1123,15 +1061,13 @@ function construirNivel() {
 
     /* -------------------------------------------------------------
        LECTURA DEL MAPA
-
-       Cada carácter crea un elemento del escenario.
        ------------------------------------------------------------- */
 
     const alto = MAPA_NIVEL.length;
 
     MAPA_NIVEL.forEach((fila, y) => {
 
-        // Invertimos Y porque el mapa está escrito de arriba abajo.
+        // Invertimos Y porque el mapa está escrito de arriba abajo
         const yMundo = alto - 1 - y;
 
         for (let index = 0; index < fila.length; index++) {
@@ -1140,22 +1076,22 @@ function construirNivel() {
 
             if (SOLIDOS.has(element)) {
 
-                // Crear un bloque sólido.
+                // Crear un bloque sólido
                 crearBloque(index, yMundo, element);
 
             } else if (element === "o") {
 
-                // Crear una gema coleccionable.
+                // Crear una gema 
                 crearGema(index, yMundo);
 
             } else if (element === "E") {
 
-                // Crear un enemigo rojo.
+                // Crear un enemigo 
                 crearEnemigo(index, yMundo);
 
             } else if (element === "P") {
 
-                // Posición donde inicia Junimo.
+                // Posición donde inicia el jugador
                 posicionInicial = {
                     x: index + 0.5,
                     y: yMundo
@@ -1163,7 +1099,7 @@ function construirNivel() {
 
             } else if (element === "K") {
 
-                // Bandera amarilla de punto de control.
+                // punto de control
                 const bandera = crearBandera(0xffd23f);
 
                 bandera.position.set(
@@ -1183,7 +1119,7 @@ function construirNivel() {
 
             } else if (element === "F") {
 
-                // Bandera verde de meta.
+                // Bandera meta.
                 const bandera = crearBandera(0x28d950);
 
                 bandera.position.set(
@@ -1206,13 +1142,10 @@ function construirNivel() {
 
 /* =====================================================================
    CREACIÓN DE BLOQUES
-
-   Cada bloque es un cubo 3D con su textura correspondiente.
    ===================================================================== */
 
 function crearBloque(x, y, tipo) {
 
-    // Seleccionar material según el carácter del mapa.
     const materialBloque = {
 
         "#": MATERIALES.suelo,
@@ -1235,14 +1168,12 @@ function crearBloque(x, y, tipo) {
     }[tipo];
 
 
-    // Crear cubo 3D.
+    // cubo 3D.
     const malla = new THREE.Mesh(
         GEO_BLOQUE,
         materialBloque
     );
 
-
-    // Ubicar el bloque en el centro de su casilla.
     malla.position.set(
         x + 0.5,
         y + 0.5,
@@ -1254,8 +1185,7 @@ function crearBloque(x, y, tipo) {
 
     grupoNivel.add(malla);
 
-
-    // Guardar el bloque para calcular colisiones.
+    // Guardar el bloque para calcular colisiones
     bloques.set(
         clave(x, y),
         {
@@ -1268,7 +1198,7 @@ function crearBloque(x, y, tipo) {
     );
 
 
-    // Agregar tierra debajo del suelo principal.
+    // Agregar tierra debajo del suelo
     if (tipo === "#" && y === 0) {
 
         const tierra = new THREE.Mesh(
@@ -1292,11 +1222,11 @@ function crearBloque(x, y, tipo) {
 /* =====================================================================
    GEMAS COLECCIONABLES
 
-   Las gemas:
-   - Giran sobre sí mismas.
-   - Flotan ligeramente.
-   - Desaparecen cuando Junimo las recoge.
-   - Entregan 100 puntos cada una.
+   Las gemas
+   Giran sobre sí mismas
+   Flotan
+   Desaparecen cuando se cogen
+   Entregan 100 puntos cada una.
    ===================================================================== */
 
 function crearGema(x, y) {
@@ -1321,13 +1251,11 @@ function crearGema(x, y) {
         recogida: false
     });
 }
-
-
 /* =====================================================================
    FRUTA ESTELAR
 
-   Aparece al golpear una caja misteriosa.
-   Su imagen proviene de estrella.png.
+   Aparece al golpear una caja misteriosa
+   Su imagen proviene de estrella.png
    ===================================================================== */
 
 function lanzarFrutaEstelar(x, y) {
@@ -1346,7 +1274,7 @@ function lanzarFrutaEstelar(x, y) {
     grupoNivel.add(malla);
 
 
-    // La fruta sube y después cae.
+    // La fruta sube y después cae
     particulas.push({
         malla,
         vx: 0,
@@ -1358,16 +1286,8 @@ function lanzarFrutaEstelar(x, y) {
     });
 }
 
-
 /* =====================================================================
    RECOLECCIÓN DE GEMAS
-
-   Calculamos la distancia entre Junimo y cada gema.
-
-   Si están suficientemente cerca:
-   - Se recoge la gema.
-   - Se suman puntos.
-   - Cada 20 gemas se obtiene una vida extra.
    ===================================================================== */
 
 function actualizarGemas(dt, tiempo) {
@@ -1377,17 +1297,17 @@ function actualizarGemas(dt, tiempo) {
         if (gema.recogida) continue;
 
 
-        // Animación de giro.
+        // Animación de giro
         gema.malla.rotation.y += dt * 3;
 
 
-        // Animación de flotación.
+        // Animación de flotación
         gema.malla.position.y =
             gema.y +
             Math.sin(tiempo * 4 + gema.x) * 0.08;
 
 
-        // Distancia entre Junimo y la gema.
+        // Distancia entre Junimo y la gma
         const dx = jugador.x - gema.x;
 
         const dy =
@@ -1398,7 +1318,7 @@ function actualizarGemas(dt, tiempo) {
             dx * dx + dy * dy;
 
 
-        // Detectar si Junimo recoge la gema.
+        // Detectar si Junimo recoge la gema
         if (distanciaCuadrada < 0.75 * 0.75) {
 
             gema.recogida = true;
@@ -1409,7 +1329,7 @@ function actualizarGemas(dt, tiempo) {
             gemasRecogidas++;
 
 
-            // Una vida extra por cada 20 gemas.
+            // Una vida extra por cada 20 gemas
             if (gemasRecogidas % 20 === 0) {
 
                 vidas++;
@@ -1420,12 +1340,8 @@ function actualizarGemas(dt, tiempo) {
     }
 }
 
-
 /* =====================================================================
-   CREACIÓN DE ENEMIGOS
-
-   Los enemigos utilizan el modelo de esfera roja con ojos
-   definido en la Parte 2.
+   CREACIÓN ENEMIGOS
    ===================================================================== */
 
 function crearEnemigo(x, y) {
@@ -1454,15 +1370,14 @@ function crearEnemigo(x, y) {
     });
 }
 
-
 /* =====================================================================
-   RAMPAS
+   RAMPA
 
    Se construyen mediante una curva suave.
    La pendiente permite que Junimo suba y baje.
    ===================================================================== */
 
-// Altura de la rampa en una posición X.
+// Altura de la rampa en una posición X
 function alturaRampa(r, x) {
 
     const t = Math.min(
@@ -1482,7 +1397,7 @@ function alturaRampa(r, x) {
 }
 
 
-// Calcula la pendiente de la rampa.
+// Calcula la pendiente de la rampa
 function pendienteRampa(r, x) {
 
     const t = Math.min(
@@ -1501,7 +1416,7 @@ function pendienteRampa(r, x) {
 }
 
 
-// Busca si Junimo está sobre alguna rampa.
+// Busca si está sobre alguna rampa
 function rampaEn(x) {
 
     return RAMPAS.find(
@@ -1509,9 +1424,8 @@ function rampaEn(x) {
     ) || null;
 }
 
-
 /* =====================================================================
-   CONSTRUCCIÓN 3D DE LAS RAMPAS
+   CONSTRUCCIÓN 3D DE LA RAMPA
    ===================================================================== */
 
 function crearRampa(r) {
@@ -1520,7 +1434,7 @@ function crearRampa(r) {
     const pts = [];
 
 
-    // Calcular los puntos de la curva.
+    // Calcular los puntos de la curva
     for (let i = 0; i <= N; i++) {
 
         const x =
@@ -1534,7 +1448,7 @@ function crearRampa(r) {
     }
 
 
-    // Crear la forma de tierra.
+    // Crear la forma de tierra
     const formaTierra = new THREE.Shape();
 
     formaTierra.moveTo(r.x0, -4);
@@ -1548,7 +1462,7 @@ function crearRampa(r) {
     formaTierra.closePath();
 
 
-    // Convertir la forma en un objeto 3D.
+    // Convertir la forma en un objeto 3D
     const geoTierra = new THREE.ExtrudeGeometry(
         formaTierra,
         {
@@ -1571,7 +1485,7 @@ function crearRampa(r) {
     grupoNivel.add(tierra);
 
 
-    // Crear una franja de pasto sobre la rampa.
+    // Crear una franja de pasto sobre la rampa
     const formaPasto = new THREE.Shape();
 
     formaPasto.moveTo(
@@ -1621,9 +1535,7 @@ function crearRampa(r) {
 
 
 /* =====================================================================
-   ESTANQUES
-
-   Se colocan en los huecos del terreno.
+   AGUA (MINI ESTANQUES EN LOS VACIOS)
    ===================================================================== */
 
 function crearEstanque(e) {
@@ -1654,21 +1566,19 @@ function crearEstanque(e) {
 
 /* =====================================================================
    7. ENTRADA DEL TECLADO
-
-   Guardamos las teclas presionadas para controlar a Junimo.
    ===================================================================== */
 
 const teclas = {};
 
 
-// Detectar cuando se presiona una tecla.
+// Detectar cuando se presiona una tecla
 window.addEventListener('keydown', (e) => {
 
     teclas[e.code] = true;
 
 
     // Evitar que las flechas y la barra espaciadora
-    // desplacen la página.
+    // desplacen la página
     if ([
         'Space',
         'ArrowUp',
@@ -1681,7 +1591,7 @@ window.addEventListener('keydown', (e) => {
     }
 
 
-    // Guardar una solicitud de salto.
+    // Guardar una solicitud de salto
     if (
         !e.repeat &&
         esTeclaSalto(e.code) &&
@@ -1693,7 +1603,7 @@ window.addEventListener('keydown', (e) => {
     }
 
 
-    // Tecla P: pausar o reanudar.
+    // Tecla P: pausar 
     if (e.code === 'KeyP') {
         alternarPausa();
     }
@@ -1710,40 +1620,40 @@ window.addEventListener('keydown', (e) => {
 });
 
 
-// Detectar cuando se suelta una tecla.
+// Detectar cuando se suelta una tecla
 window.addEventListener('keyup', (e) => {
 
     teclas[e.code] = false;
 });
 
 
-// Teclas para saltar.
+// Teclas para saltar
 const esTeclaSalto = code =>
     code === 'Space' ||
     code === 'ArrowUp' ||
     code === 'KeyW';
 
 
-// Movimiento hacia la izquierda.
+// Movimiento hacia la izquierda
 const teclaIzquierda = () =>
     teclas['ArrowLeft'] ||
     teclas['KeyA'];
 
 
-// Movimiento hacia la derecha.
+// Movimiento hacia la derecha
 const teclaDerecha = () =>
     teclas['ArrowRight'] ||
     teclas['KeyD'];
 
 
-// Comprueba si se mantiene presionado el salto.
+// Comprueba si se mantiene presionado el salto
 const teclaSaltoPresionada = () =>
     teclas['Space'] ||
     teclas['ArrowUp'] ||
     teclas['KeyW'];
 
 
-// Tecla Shift: correr.
+// Tecla Shift pa correr.
 const teclaCorrer = () =>
     teclas['ShiftLeft'] ||
     teclas['ShiftRight'];
@@ -1759,13 +1669,13 @@ const teclaCorrer = () =>
    Las rampas se calculan por separado.
    ===================================================================== */
 
-// Busca un bloque en una posición del mapa.
+// Busca un bloque en una posición del mapa
 function obtenerBloque(tx, ty) {
     return bloques.get(clave(tx, ty)) || null;
 }
 
 
-// Encuentra los bloques que toca una entidad.
+// Encuentra los bloques que toca una entidad
 function bloquesQueToca(ent, holgura = 0.001) {
 
     const resultado = [];
@@ -1797,7 +1707,6 @@ function bloquesQueToca(ent, holgura = 0.001) {
 
     return resultado;
 }
-
 
 /* =====================================================================
    MOVIMIENTO Y COLISIONES
@@ -1867,13 +1776,13 @@ function moverEntidad(ent, dt, alGolpearTecho) {
 
         } else if (ent.vy > 0) {
 
-            // La entidad golpea el techo.
+            // La entidad golpea el techo
             ent.y = Math.min(
                 ...choques.map(b => b.y)
             ) - ent.alto - 0.001;
 
 
-            // Detectar golpe contra cajas.
+            // Detectar golpe contra cajas
             if (alGolpearTecho) {
                 alGolpearTecho(choques);
             }
@@ -1929,7 +1838,7 @@ function resolverRampa(ent, dt) {
 }
 
 
-// Comprueba si dos entidades se superponen.
+// Comprueba si dos entidades se superponen
 function seSuperponen(a, b) {
 
     return (
@@ -1941,7 +1850,6 @@ function seSuperponen(a, b) {
         a.y + a.alto > b.y
     );
 }
-
 
 /* =====================================================================
    9. BLOQUES Y CAJAS MISTERIOSAS
@@ -1956,7 +1864,7 @@ function golpearBloque(listaBloques) {
     if (listaBloques.length === 0) return;
 
 
-    // Elegir el bloque más cercano al centro de Junimo.
+    // Elegir el bloque más cercano al centro de Junim
     const bloque = listaBloques.reduce(
         (mejor, b) =>
 
@@ -1983,22 +1891,22 @@ function golpearBloque(listaBloques) {
 
     } else if (bloque.tipo === 'G') {
 
-        // La caja entrega el premio una sola vez.
+        // La caja entrega el premio una sola vez
         bloque.tipo = 'U';
 
-        // Cambiar su apariencia a caja vacía.
+        // Cambiar su apariencia a caja vacía
         bloque.malla.material = MATERIALES.usado;
 
-        // Animación de golpe.
+        // Animación de golpe
         bloque.rebote = 0.18;
 
-        // Lanzar fruta estelar.
+        // Lanzar fruta estelar
         lanzarFrutaEstelar(
             bloque.x,
             bloque.y
         );
 
-        // Sumar puntos.
+        // Sumar puntos
         puntos += 300;
 
         mostrarAviso('¡FRUTA ESTELAR! +300');
@@ -2014,7 +1922,7 @@ function golpearBloque(listaBloques) {
     }
 
 
-    // Si hay un enemigo encima, recibe el golpe.
+    // Si hay un enemigo encima recibe el golpe
     enemigos.forEach(en => {
 
         if (
@@ -2032,21 +1940,21 @@ function golpearBloque(listaBloques) {
 /* =====================================================================
    DESTRUIR CAJAS DE MADERA
 
-   Se eliminan del escenario y del sistema de colisiones.
+   Se eliminan del escenario y del sistema de colisiones
    ===================================================================== */
 
 function destruirBloque(bloque) {
 
-    // Eliminar visualmente.
+    // Eliminar visualmente
     grupoNivel.remove(bloque.malla);
 
-    // Eliminar del mapa de colisiones.
+    // Eliminar del mapa de colisiones
     bloques.delete(
         clave(bloque.x, bloque.y)
     );
 
 
-    // Crear fragmentos al destruir la caja.
+    // Crear fragmentos al destruir la caja
     crearParticulas(
         bloque.x + 0.5,
         bloque.y + 0.5,
@@ -2055,7 +1963,7 @@ function destruirBloque(bloque) {
     );
 
 
-    // Recompensa.
+    // Recompensa
     puntos += 50;
 }
 
@@ -2063,7 +1971,7 @@ function destruirBloque(bloque) {
 /* =====================================================================
    10. JUGADOR JUNIMO
 
-   Controlamos:
+   Controlamos
    - Posición
    - Velocidad
    - Aceleración
@@ -2099,27 +2007,27 @@ const jugador = {
     tiempoAnimacion: 0,
     aplastar: 0,
 
-    // Movimiento sobre rampas.
+    // Movimiento sobre rampa
     enRampa: false,
     enRampaAntes: false,
 
     pendiente: 0,
     rodando: false,
 
-    // Modelo 3D definido en la Parte 2.
+    
     malla: crearModeloJugador()
 };
 
 
-// Agregar Junimo a la escena.
+// Agregar a la escena
 scene.add(jugador.malla);
 
 
 /* =====================================================================
    REAPARICIÓN DEL JUGADOR
 
-   Si activó una bandera de control, reaparece allí.
-   De lo contrario, vuelve al inicio.
+   Si activó una bandera de control, reaparece allí
+   De lo contrario, vuelve al inicio
    ===================================================================== */
 
 function reaparecerJugador() {
@@ -2155,7 +2063,7 @@ function reaparecerJugador() {
         CONFIG.INVULNERABLE;
 
 
-    // Restaurar el modelo visual.
+    // Restaurar el modelo visual
     jugador.malla.rotation.set(0, 0, 0);
 
     jugador.malla.visible = true;
@@ -2200,7 +2108,7 @@ function actualizarJugador(dt) {
         : velocidadMaxima;
 
 
-    // La pendiente acelera a Junimo cuesta abajo.
+    // La pendiente acelera a Junimo cuesta abajo
     if (j.enRampaAntes) {
 
         j.vx -=
@@ -2210,7 +2118,7 @@ function actualizarJugador(dt) {
     }
 
 
-    // Aceleración al caminar.
+    // Aceleración al caminar
     if (direccion !== 0) {
 
         j.vx +=
@@ -2223,7 +2131,7 @@ function actualizarJugador(dt) {
 
     } else if (!j.enRampaAntes) {
 
-        // Fricción cuando no se presiona ninguna dirección.
+        // Fricción cuando no se presiona ninguna dirección
         const freno = (
             j.rodando
                 ? CONFIG.FRICCION_RODAR
@@ -2237,7 +2145,7 @@ function actualizarJugador(dt) {
     }
 
 
-    // Limitar velocidad horizontal.
+    // Limitar velocidad horizontal
     j.vx = Math.max(
         -limite,
         Math.min(limite, j.vx)
@@ -2253,7 +2161,7 @@ function actualizarJugador(dt) {
         : j.tiempoCoyote - dt;
 
 
-    // Reducir tiempo del buffer de salto.
+    // Reducir tiempo del buffer de salto
     j.bufferSalto -= dt;
 
 
@@ -2304,7 +2212,7 @@ function actualizarJugador(dt) {
     j.vy += g * dt;
 
 
-    // Limitar velocidad máxima de caída.
+    // Limitar velocidad máxima de caída
     j.vy = Math.max(
         j.vy,
         CONFIG.VEL_MAX_CAIDA
@@ -2320,7 +2228,7 @@ function actualizarJugador(dt) {
     const vyAntes = j.vy;
 
 
-    // Mover y detectar golpes desde abajo.
+    // Mover y detectar golpes desde abajo
     moverEntidad(
         j,
         dt,
@@ -2328,7 +2236,7 @@ function actualizarJugador(dt) {
     );
 
 
-    // Evitar que Junimo salga por el borde izquierdo.
+    // Evitar que salga por el borde izquierdo
     if (j.x < j.ancho / 2) {
 
         j.x = j.ancho / 2;
@@ -2337,11 +2245,11 @@ function actualizarJugador(dt) {
     }
 
 
-    // Resolver contacto con rampas.
+    // contacto con rampas
     resolverRampa(j, dt);
 
 
-    // Animación de aterrizaje.
+    // Animación de aterrizaje
     if (!estabaEnSuelo && j.enSuelo) {
 
         j.aplastar = Math.min(
@@ -2397,7 +2305,7 @@ function actualizarJugador(dt) {
         puntoControl.activo = true;
 
 
-        // Cambiar bandera amarilla a verde.
+        // Cambiar bandera amarilla a verde
         puntoControl.bandera.userData.tela
             .material.color.set(0x28d950);
 
@@ -2431,17 +2339,13 @@ function actualizarJugador(dt) {
     }
 
 
-    // Actualizar la apariencia de Junimo.
+    // Actualizar la apariencia de Junimo
     actualizarModeloJugador(dt);
 }
 
 
 /* =====================================================================
-   ANIMACIÓN DEL MODELO JUNIMO
-
-   - Camina moviendo brazos y piernas.
-   - Rueda sobre las rampas.
-   - Parpadea cuando es invulnerable.
+   ANIMACIÓN DEL JUNIMO
    ===================================================================== */
 
 function actualizarModeloJugador(dt) {
@@ -2478,14 +2382,14 @@ function actualizarModeloJugador(dt) {
 
     } else {
 
-        // Recuperar orientación vertical del cuerpo.
+        // Recuperar orientación vertical del cuerpo
         partes.cuerpoRot.rotation.z *=
             Math.max(0, 1 - dt * 10);
 
         partes.extremidades.visible = true;
 
 
-        // Movimiento alternado de brazos y piernas.
+        // Movimiento de brazos y piernas
         const paso =
             Math.sin(reloj.elapsedTime * 13) *
             Math.min(
@@ -2507,8 +2411,6 @@ function actualizarModeloJugador(dt) {
             -paso * 0.4;
     }
 
-
-    // Parpadeo durante invulnerabilidad.
     m.visible = j.invulnerable > 0
         ? Math.floor(j.invulnerable * 12) % 2 === 0
         : true;
@@ -2518,10 +2420,8 @@ function actualizarModeloJugador(dt) {
 /* =====================================================================
    SISTEMA DE VIDAS
 
-   Cuando Junimo recibe daño:
-   - Pierde una vida.
-   - Se reproduce una animación.
-   - Reaparece en el inicio o checkpoint.
+   Cuando Junimo recibe daño
+   - Pierde una vida, se reproduce una animación, reaparece en el inicio o checkpoint.
    ===================================================================== */
 
 function perderVida(conAnimacion) {
@@ -2553,13 +2453,13 @@ function actualizarMuerte(dt) {
     tiempoMuerte -= dt;
 
 
-    // Aplicar gravedad durante la caída.
+    // Aplicar gravedad durante la caída
     jugador.vy += CONFIG.GRAVEDAD * dt;
 
     jugador.y += jugador.vy * dt;
 
 
-    // Actualizar posición visual.
+    // Actualizar posición visual
     jugador.malla.position.set(
         jugador.x,
         jugador.y,
@@ -2567,7 +2467,7 @@ function actualizarMuerte(dt) {
     );
 
 
-    // Girar el personaje durante la animación.
+    // Girar el personaje durante la animación
     jugador.malla.rotation.z += dt * 8;
 
 
@@ -2579,10 +2479,10 @@ function actualizarMuerte(dt) {
 
         } else {
 
-            // Volver al punto de control o al inicio.
+            // Volver al punto de control o al inicio
             reaparecerJugador();
 
-            // Restaurar el tiempo.
+            // Restaurar el tiempo
             tiempoRestante = CONFIG.TIEMPO_NIVEL;
 
             estado = 'jugando';
@@ -2591,19 +2491,13 @@ function actualizarMuerte(dt) {
 }
 /* =====================================================================
    11. ENEMIGOS
-
-   Los enemigos:
-   - Caminan sobre las plataformas.
-   - Cambian de dirección al encontrar paredes o bordes.
-   - Pueden ser derrotados saltando sobre ellos.
-   - Quitan una vida si golpean a Junimo por un costado.
    ===================================================================== */
 
 function actualizarEnemigos(dt, tiempo) {
 
     enemigos.forEach(en => {
 
-        // Enemigo derrotado.
+        // Enemigo derrotado
         if (!en.vivo) {
 
             en.tiempoMuerto -= dt;
@@ -2619,13 +2513,13 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        // Solo mover enemigos cercanos al jugador.
+        // Solo mover enemigos cercanos al jugador
         if (Math.abs(en.x - jugador.x) > 18) {
             return;
         }
 
 
-        // Movimiento horizontal y gravedad.
+        // Movimiento horizontal y gravedad
         en.vx =
             en.direccion * CONFIG.VEL_ENEMIGO;
 
@@ -2634,7 +2528,7 @@ function actualizarEnemigos(dt, tiempo) {
         moverEntidad(en, dt);
 
 
-        // Detectar paredes y bordes.
+        // Detectar paredes y bordes
         let girar = en.chocoPared;
 
         if (en.enSuelo) {
@@ -2660,19 +2554,11 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        // Evitar que salga por la izquierda.
+        // Evitar que salga por la izquierda
         if (en.x < en.ancho / 2) {
 
             en.x = en.ancho / 2;
             en.direccion = 1;
-        }
-
-
-        // Enemigo que cae al vacío.
-        if (en.y < CONFIG.LIMITE_CAIDA) {
-
-            en.vivo = false;
-            en.tiempoMuerto = 0;
         }
 
 

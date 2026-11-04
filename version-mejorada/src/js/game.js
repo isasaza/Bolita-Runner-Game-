@@ -2562,7 +2562,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        // Actualizar posición visual.
+        // Actualizar posición visual
         en.malla.position.set(
             en.x,
             en.y,
@@ -2570,7 +2570,7 @@ function actualizarEnemigos(dt, tiempo) {
         );
 
 
-        // Animación de movimiento.
+        // Animación de movimiento
         en.malla.scale.set(
             en.direccion,
             1 + Math.sin(tiempo * 8) * 0.04,
@@ -2605,7 +2605,7 @@ function actualizarEnemigos(dt, tiempo) {
                 radioTotal * radioTotal
             ) {
 
-                // Si cae sobre el enemigo, lo derrota.
+                // Si cae sobre el enemigo lo derrota
                 if (
                     jugador.vy < 0 &&
                     dy > 0.1
@@ -2621,7 +2621,7 @@ function actualizarEnemigos(dt, tiempo) {
                         teclaSaltoPresionada();
 
 
-                // Si toca al enemigo de lado, pierde una vida.
+                // Si toca al enemigo de lado pierde una vida
                 } else if (
                     jugador.invulnerable <= 0
                 ) {
@@ -2632,8 +2632,6 @@ function actualizarEnemigos(dt, tiempo) {
         }
     });
 }
-
-
 /* =====================================================================
    DERROTAR ENEMIGOS
    ===================================================================== */
@@ -2645,7 +2643,7 @@ function derrotarEnemigo(en, puntosGanados) {
     en.tiempoMuerto = 0.5;
 
 
-    // Aplastar visualmente al enemigo.
+    // Aplastar visualmente al enemigo
     en.malla.scale.set(
         1.2,
         0.25,
@@ -2653,7 +2651,7 @@ function derrotarEnemigo(en, puntosGanados) {
     );
 
 
-    // Sumar puntos.
+    // Sumar puntos
     puntos += puntosGanados;
 }
 
@@ -2661,8 +2659,8 @@ function derrotarEnemigo(en, puntosGanados) {
 /* =====================================================================
    12. PARTÍCULAS Y ANIMACIONES
 
-   Al romper una caja aparecen fragmentos.
-   También se anima la fruta estelar.
+   Al romper una caja aparecen fragmentos
+   También se anima la fruta estelar
    ===================================================================== */
 
 const GEO_PEDAZO =
@@ -2717,17 +2715,17 @@ function crearParticulas(x, y, materialParticula, cantidad) {
 
 function actualizarParticulas(dt) {
 
-    // Recorrer de atrás hacia adelante para eliminar partículas.
+    // Recorrer de atrás hacia adelante para eliminar partículas
     for (let i = particulas.length - 1; i >= 0; i--) {
 
         const p = particulas[i];
 
 
-        // Gravedad.
+        // Gravedad
         p.vy += p.gravedad * dt;
 
 
-        // Movimiento.
+        // Movimiento
         p.malla.position.x += p.vx * dt;
 
         p.malla.position.y += p.vy * dt;
@@ -2735,17 +2733,17 @@ function actualizarParticulas(dt) {
         p.malla.position.z += p.vz * dt;
 
 
-        // Rotación.
+        // Rotación
         p.malla.rotation.x += p.gira * dt;
 
         p.malla.rotation.y += p.gira * dt;
 
 
-        // Reducir duración.
+        // Reducir duración
         p.vida -= dt;
 
 
-        // Eliminar partícula cuando termina.
+        // Eliminar partícula cuando termina
         if (p.vida <= 0) {
 
             grupoNivel.remove(p.malla);
@@ -2759,13 +2757,13 @@ function actualizarParticulas(dt) {
 /* =====================================================================
    ANIMACIONES DEL NIVEL
 
-   - Rebote de cajas.
-   - Movimiento de bandera.
+   - Rebote de cajas
+   - Movimiento de bandera
    ===================================================================== */
 
 function animarNivel(dt, tiempo) {
 
-    // Animación de bloques golpeados.
+    // Animación de bloques golpeados
     bloques.forEach(b => {
 
         if (b.rebote > 0) {
@@ -2781,7 +2779,7 @@ function animarNivel(dt, tiempo) {
     });
 
 
-    // Bandera de meta ondeando.
+    // Bandera de meta ondeando
     if (banderaMeta) {
 
         banderaMeta.bandera.userData.tela.rotation.y =
@@ -2791,10 +2789,7 @@ function animarNivel(dt, tiempo) {
 
 
 /* =====================================================================
-   13. CÁMARA QUE SIGUE AL JUGADOR
-
-   La cámara acompaña a Junimo suavemente.
-   También actualiza las capas del fondo.
+   13. CÁMARA
    ===================================================================== */
 
 function actualizarCamara(dt) {
@@ -2804,8 +2799,6 @@ function actualizarCamara(dt) {
         5 * dt
     );
 
-
-    // La cámara mira un poco adelante de Junimo.
     const objetivoX = Math.max(
         8,
         jugador.x + 2
@@ -2838,16 +2831,13 @@ function actualizarCamara(dt) {
     );
 
 
-    // Actualizar iluminación.
+    // Actualizar iluminación
     moverSol();
-
-    // Mantener el fondo siguiendo a Junimo.
     actualizarFondo(dt);
 }
 
-
 /* =====================================================================
-   LUZ QUE SIGUE A LA CÁMARA
+   LUZ 
    ===================================================================== */
 
 function moverSol() {
@@ -2865,11 +2855,8 @@ function moverSol() {
     );
 }
 
-
 /* =====================================================================
    14. INTERFAZ DEL JUEGO
-
-   Los elementos se obtienen desde index.html.
    ===================================================================== */
 
 const ui = {
@@ -2896,11 +2883,6 @@ const ui = {
 
 /* =====================================================================
    ACTUALIZAR INDICADORES
-
-   Muestra:
-   - Vidas
-   - Puntos
-   - Tiempo restante
    ===================================================================== */
 
 function actualizarHUD() {
@@ -2908,7 +2890,7 @@ function actualizarHUD() {
     ui.vidas.textContent = vidas;
 
 
-    // Mostrar puntos con seis dígitos.
+    // Mostrar puntos con seis dígitos
     ui.puntos.textContent =
         String(puntos).padStart(6, '0');
 
@@ -2942,12 +2924,11 @@ function mostrarAviso(texto) {
     }, 1500);
 }
 
-
 /* =====================================================================
    BOTONES DEL JUEGO
    ===================================================================== */
 
-// Botón de inicio.
+// Botón de inicio
 const botonJugar =
     document.getElementById('btn-jugar');
 
@@ -2959,7 +2940,7 @@ botonJugar.addEventListener(
 );
 
 
-// Botón de reinicio.
+// Botón de reinicio
 document.getElementById('btn-reiniciar')
     .addEventListener(
         'click',
@@ -2970,7 +2951,7 @@ document.getElementById('btn-reiniciar')
 /* =====================================================================
    15. ESTADOS Y BUCLE PRINCIPAL
 
-   Estados:
+   Estados=
    inicio
    jugando
    pausa
@@ -3009,17 +2990,17 @@ function iniciarJuego() {
     tiempoMuerte = 0;
 
 
-    // Reconstruir el escenario.
+    // Reconstruir el escenario
     construirNivel();
 
 
-    // Colocar Junimo en el inicio.
+    // Colocar Junimo en el inicio
     reaparecerJugador();
 
     jugador.invulnerable = 0;
 
 
-    // Posición inicial de la cámara.
+    // Posición inicial de la cámara
     camera.position.set(
         8,
         4.5,
@@ -3027,7 +3008,7 @@ function iniciarJuego() {
     );
 
 
-    // Ocultar pantallas.
+    // Ocultar pantallas
     ui.inicio.classList.add('oculto');
 
     ui.fin.classList.add('oculto');
@@ -3041,8 +3022,6 @@ function iniciarJuego() {
 
     actualizarHUD();
 }
-
-
 /* =====================================================================
    PAUSAR Y REANUDAR
    ===================================================================== */
@@ -3063,11 +3042,10 @@ function alternarPausa() {
         ui.pausa.classList.add('oculto');
 
 
-        // Evitar salto de tiempo después de pausar.
+        // Evitar salto de tiempo después de pausar
         reloj.getDelta();
     }
 }
-
 
 /* =====================================================================
    VICTORIA
@@ -3075,7 +3053,7 @@ function alternarPausa() {
 
 function ganarNivel() {
 
-    // Bonificación por tiempo restante.
+    // Bonificación por tiempo restante
     const bonus =
         Math.ceil(tiempoRestante) * 10;
 
@@ -3116,13 +3094,9 @@ function terminarJuego(gano, bonus = 0) {
     }, gano ? 800 : 200);
 }
 
-
 /* =====================================================================
    BUCLE PRINCIPAL
-
-   Se ejecuta continuamente mientras el juego está abierto.
-
-   dt = tiempo transcurrido entre fotogramas.
+   dt = tiempo transcurrido entre fotogramas
    ===================================================================== */
 
 const reloj = new THREE.Clock();
@@ -3144,31 +3118,31 @@ function animate() {
 
     if (estado === 'jugando') {
 
-        // Actualizar movimiento de Junimo.
+        // Actualizar movimiento
         actualizarJugador(dt);
 
 
-        // Actualizar enemigos.
+        // Actualizar enemigos
         if (estado === 'jugando') {
 
             actualizarEnemigos(dt, tiempo);
         }
 
 
-        // Actualizar gemas.
+        // Actualizar gemas
         if (estado === 'jugando') {
 
             actualizarGemas(dt, tiempo);
         }
 
 
-        // Actualizar temporizador.
+        // Actualizar temporizador
         if (estado === 'jugando') {
 
             tiempoRestante -= dt;
 
 
-            // Si se termina el tiempo, pierde una vida.
+            // Si se termina el tiempo pierde una vida
             if (tiempoRestante <= 0) {
 
                 tiempoRestante = 0;
@@ -3189,7 +3163,7 @@ function animate() {
 
 
     // -------------------------------------------------------------
-    // ANIMACIONES DEL ESCENARIO
+    // ANIMACIONES
     // -------------------------------------------------------------
 
     if (estado !== 'pausa') {
@@ -3201,7 +3175,7 @@ function animate() {
 
 
     // -------------------------------------------------------------
-    // ACTUALIZAR CÁMARA E INTERFAZ
+    // ACTUALIZAR CÁMARA  INTERFAZ
     // -------------------------------------------------------------
 
     if (estado !== 'inicio') {
@@ -3213,7 +3187,7 @@ function animate() {
 
     } else {
 
-        // Cámara animada del menú inicial.
+        // Cámara animada del menú inicial
         camera.position.set(
             10 + Math.sin(tiempo * 0.2) * 6,
             5,
@@ -3241,21 +3215,21 @@ function animate() {
    ARRANQUE DEL JUEGO
    ===================================================================== */
 
-// Mostrar pantalla de inicio.
+// Mostrar pantalla de inicio
 ui.inicio.classList.remove('oculto');
 
 
-// Construir el escenario.
+// Construir el escenario
 construirNivel();
 
 
-// Colocar a Junimo.
+// Colocar a Junimo
 reaparecerJugador();
 
 
-// Sincronizar el modelo 3D.
+// Sincronizar el modelo 3D
 actualizarModeloJugador(0);
 
 
-// Iniciar el bucle de renderizado.
+// Iniciar el bucle de renderizado
 renderer.setAnimationLoop(animate);

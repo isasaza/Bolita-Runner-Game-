@@ -2371,9 +2371,6 @@ gravedad mayor cuando cae
 
     /* ========================================================
        PASO 21. DETECTAR LA META
-
-       Si llega a la bandera final,
-       se completa el nivel.
        ======================================================== */
 
     if (
@@ -2389,9 +2386,6 @@ gravedad mayor cuando cae
 
     /* ========================================================
        PASO 22. INVULNERABILIDAD
-
-       Despues de reaparecer Junimo tiene
-       proteccion durante un tiempo.
        ======================================================== */
 
     if (j.invulnerable > 0) {
@@ -2401,23 +2395,8 @@ gravedad mayor cuando cae
             j.invulnerable - dt
         );
     }
-
-
-    /* ========================================================
-       PASO 23. ACTUALIZAR MODELO VISUAL
-       ======================================================== */
-
     actualizarModeloJugador(dt);
 }
-
-
-/* ============================================================
-   ANIMACION DE JUNIMO
-
-   La esfera gira de acuerdo con su desplazamiento.
-
-   El efecto visual no modifica las colisiones.
-   ============================================================ */
 
 function actualizarModeloJugador(dt) {
 
@@ -2426,7 +2405,7 @@ function actualizarModeloJugador(dt) {
     const m = j.malla;
 
 
-    // Actualizar posicion tridimensional.
+    // Actualizar posicion
     m.position.set(
         j.x,
         j.y,
@@ -2437,9 +2416,7 @@ function actualizarModeloJugador(dt) {
     /* ========================================================
        RODAMIENTO
 
-       Formula:
-
-       angulo = distancia / radio
+       Formula: angulo = distancia / radio
 
        distancia = velocidad * tiempo
        ======================================================== */
@@ -2447,14 +2424,6 @@ function actualizarModeloJugador(dt) {
     m.userData.cuerpoRot.rotation.z -=
 
         j.vx * dt / R_CUERPO;
-
-
-    /* ========================================================
-       PARPADEO DE INVULNERABILIDAD
-
-       Junimo parpadea brevemente despues
-       de perder una vida y reaparecer.
-       ======================================================== */
 
     if (j.invulnerable > 0) {
 
@@ -2469,50 +2438,28 @@ function actualizarModeloJugador(dt) {
         m.visible = true;
     }
 }
-
-
-/* ============================================================
-   SISTEMA DE VIDAS
-
-   Cuando Junimo recibe daño:
-   - Pierde una vida.
-   - Se activa el estado de muerte.
-   - Comienza la animacion.
-   ============================================================ */
+//Sistema de vidas
 
 function perderVida(conAnimacion) {
 
-    // Evitar perder varias vidas simultaneamente.
+    // Evitar perder varias vidas simultaneamente
     if (estado !== 'jugando') {
 
         return;
     }
 
 
-    // Restar una vida.
+    // Restar una vida
     vidas--;
 
 
-    // Cambiar estado del juego.
+    // Cambiar estado del juego
     estado = 'muriendo';
 
 
-    // Duracion de la animacion.
+    // Duracion de la animacion
     tiempoMuerte = 1.4;
-
-
-    // Asegurar que Junimo sea visible.
     jugador.malla.visible = true;
-
-
-    /* ========================================================
-       ANIMACION DE MUERTE
-
-       Si recibe daño de un enemigo, salta antes de caer.
-
-       Si cae al vacio, no necesita ese impulso.
-       ======================================================== */
-
     jugador.vy = conAnimacion
         ? 12
         : 0;
@@ -2520,22 +2467,10 @@ function perderVida(conAnimacion) {
 
     jugador.vx = 0;
 
-
-    // Cancelar salto y rodamiento.
     jugador.saltando = false;
     jugador.rodando = false;
 }
 
-
-/* ============================================================
-   ACTUALIZAR ANIMACION DE MUERTE
-
-   Se llama desde el bucle principal.
-
-   Cuando termina:
-   - Si tiene vidas, reaparece.
-   - Si no tiene vidas, termina la partida.
-   ============================================================ */
 
 function actualizarMuerte(dt) {
 
@@ -2551,14 +2486,11 @@ function actualizarMuerte(dt) {
         CONFIG.GRAVEDAD * dt;
 
 
-    // Actualizar posicion vertical.
+    // Actualizar posicion vertical
     jugador.y +=
         jugador.vy * dt;
 
-
-    /* ========================================================
-       ACTUALIZAR POSICION VISUAL
-       ======================================================== */
+//actualizar visual
 
     jugador.malla.position.set(
 
@@ -2568,91 +2500,54 @@ function actualizarMuerte(dt) {
 
         0
     );
-
-
-    /* ========================================================
-       GIRAR AL PERSONAJE MIENTRAS CAE
-       ======================================================== */
-
+// gira al personaje mientras cae
     jugador.malla.rotation.z +=
         dt * 8;
-
-
-    /* ========================================================
-       FINALIZAR ANIMACION DE MUERTE
-       ======================================================== */
+//fin de la animación cuando muere
 
     if (tiempoMuerte <= 0) {
 
-        /* ----------------------------------------------------
-           CASO 1: NO QUEDAN VIDAS
-
-           Mostrar pantalla Game Over.
-           ---------------------------------------------------- */
+  //Caso 1: si no quedan vidas muestra el game over
 
         if (vidas <= 0) {
 
             terminarJuego(false);
         }
 
-
-        /* ----------------------------------------------------
-           CASO 2: TODAVIA QUEDAN VIDAS
-
-           Reaparecer en el inicio o checkpoint.
-           ---------------------------------------------------- */
+//Caso 2: reaparece ya sea en el checkpoint o en el inicio
 
         else {
 
-            // Reposicionar a Junimo.
+            
             reaparecerJugador();
 
 
-            // Reiniciar temporizador como en el original.
             tiempoRestante =
                 CONFIG.TIEMPO_NIVEL;
 
 
-            // Volver al estado de juego.
+            
             estado = 'jugando';
         }
     }
 }
 
-
-/* =============== FIN PARTE 4 =============== */
-/* ============================================================
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   PARTE 5 DE 5
-
-   11. ENEMIGOS
-   12. PARTICULAS Y ANIMACIONES
-   13. CAMARA
-   14. INTERFAZ DEL JUEGO
-   15. ESTADOS Y BUCLE PRINCIPAL
-
-   Esta parte completa el funcionamiento del videojuego.
-   ============================================================ */
-
-
 /* ============================================================
    11. ACTUALIZACION DE ENEMIGOS
 
-   Los enemigos:
-   - Caminan automaticamente.
-   - Cambian de direccion al encontrar una pared.
-   - Cambian de direccion al llegar a un borde.
-   - Pueden ser derrotados saltando sobre ellos.
-   - Quitan una vida si golpean a Junimo lateralmente.
+   Los enemigos
+   Caminan automaticamente
+   Cambian de direccion al encontrar una pared
+   Cambian de direccion al llegar a un borde
+   Pueden ser derrotados saltando sobre ellos
+   Quitan vidas
    ============================================================ */
 
 function actualizarEnemigos(dt, tiempo) {
 
     enemigos.forEach(en => {
 
-        /* ----------------------------------------------------
-           ENEMIGO DERROTADO
-           ---------------------------------------------------- */
+    //enemigo derrotado
 
         if (!en.vivo) {
 
@@ -2668,14 +2563,7 @@ function actualizarEnemigos(dt, tiempo) {
 
             return;
         }
-
-
-        /* ----------------------------------------------------
-           ACTIVAR SOLO ENEMIGOS CERCANOS
-
-           Evita actualizar enemigos que estan
-           demasiado lejos de Junimo.
-           ---------------------------------------------------- */
+//activa a los enemigos que estan cerca del jugador 
 
         if (
             Math.abs(en.x - jugador.x) > 18
@@ -2684,39 +2572,33 @@ function actualizarEnemigos(dt, tiempo) {
             return;
         }
 
-
-        /* ----------------------------------------------------
-           MOVIMIENTO DEL ENEMIGO
-           ---------------------------------------------------- */
+//movimiento
 
         en.vx =
             en.direccion *
             CONFIG.VEL_ENEMIGO;
 
 
-        // Aplicar gravedad.
+        // gravedad
         en.vy += CONFIG.GRAVEDAD * dt;
 
 
-        // Limitar velocidad de caida.
+        //velocidad caida
         en.vy = Math.max(
             en.vy,
             CONFIG.VEL_MAX_CAIDA
         );
 
 
-        // Resolver movimiento y colisiones.
+        // movimiento y colisiones
         moverEntidad(en, dt);
 
-
-        /* ----------------------------------------------------
-           DETECTAR PAREDES Y BORDES
-           ---------------------------------------------------- */
+//detectar paredes y bordes
 
         let cambiarDireccion = en.chocoPared;
 
 
-        // Revisar si hay suelo delante del enemigo.
+        // Revisar si hay suelo
         if (en.enSuelo) {
 
             const pieDelantero = Math.floor(
@@ -2737,7 +2619,7 @@ function actualizarEnemigos(dt, tiempo) {
             );
 
 
-            // Si no hay suelo, debe girar.
+            // Si no hay suelo gira
             if (!sueloDelantero) {
 
                 cambiarDireccion = true;
@@ -2745,9 +2627,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        /* ----------------------------------------------------
-           CAMBIAR DIRECCION
-           ---------------------------------------------------- */
+//Cambio de dirección
 
         if (cambiarDireccion) {
 
@@ -2755,7 +2635,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        // Evitar salir por el borde izquierdo.
+        // Evitar salir por el borde izquierdo
         if (en.x < en.ancho / 2) {
 
             en.x = en.ancho / 2;
@@ -2764,9 +2644,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
 
 
-        /* ----------------------------------------------------
-           ENEMIGO QUE CAE AL VACIO
-           ---------------------------------------------------- */
+//enemigo cae al vacio 
 
         if (en.y < CONFIG.LIMITE_CAIDA) {
 
@@ -2779,10 +2657,7 @@ function actualizarEnemigos(dt, tiempo) {
             return;
         }
 
-
-        /* ----------------------------------------------------
-           ACTUALIZAR POSICION DEL MODELO 3D
-           ---------------------------------------------------- */
+//actualizar posicion del 3d
 
         en.malla.position.set(
             en.x,
@@ -2791,7 +2666,7 @@ function actualizarEnemigos(dt, tiempo) {
         );
 
 
-        // Animacion de movimiento.
+        // Animacion de movimiento
         en.malla.scale.set(
 
             en.direccion,
@@ -2801,10 +2676,7 @@ function actualizarEnemigos(dt, tiempo) {
             1
         );
 
-
-        /* ----------------------------------------------------
-           COLISION ENTRE JUNIMO Y EL ENEMIGO
-           ---------------------------------------------------- */
+//colision entre jugador y enemigo 
 
         if (estado !== 'jugando') {
 
@@ -2818,11 +2690,11 @@ function actualizarEnemigos(dt, tiempo) {
         const radioEnemigo = 0.36;
 
 
-        // Distancia horizontal.
+        // Distancia horizontal
         const dx = jugador.x - en.x;
 
 
-        // Distancia vertical entre centros.
+        // Distancia vertical entre centros
         const dy =
 
             (jugador.y + radioJugador) -
@@ -2830,7 +2702,7 @@ function actualizarEnemigos(dt, tiempo) {
             (en.y + 0.32);
 
 
-        // Distancia al cuadrado.
+        // Distancia al cuadrado
         const distanciaCuadrada =
 
             dx * dx +
@@ -2838,7 +2710,7 @@ function actualizarEnemigos(dt, tiempo) {
             dy * dy;
 
 
-        // Suma de los radios.
+        // Suma de los radios
         const radioTotal =
 
             radioJugador +
@@ -2846,21 +2718,13 @@ function actualizarEnemigos(dt, tiempo) {
             radioEnemigo;
 
 
-        /* ----------------------------------------------------
-           COMPROBAR CONTACTO
-           ---------------------------------------------------- */
+ // comprobar contacto
 
         if (
             distanciaCuadrada <
             radioTotal * radioTotal
         ) {
 
-            /* ------------------------------------------------
-               JUNIMO CAE ENCIMA DEL ENEMIGO
-
-               El enemigo es derrotado.
-               Junimo recibe un impulso hacia arriba.
-               ------------------------------------------------ */
 
             if (
                 jugador.vy < 0 &&
@@ -2873,7 +2737,7 @@ function actualizarEnemigos(dt, tiempo) {
                 );
 
 
-                // Rebote despues de derrotar enemigo.
+                // Rebote despues de derrotar enemigo
                 jugador.vy =
 
                     CONFIG.FUERZA_SALTO *
@@ -2884,13 +2748,7 @@ function actualizarEnemigos(dt, tiempo) {
                 jugador.saltando =
                     teclaSaltoPresionada();
             }
-
-
-            /* ------------------------------------------------
-               JUNIMO TOCA AL ENEMIGO DE LADO
-
-               Pierde una vida si no es invulnerable.
-               ------------------------------------------------ */
+// El jugador toca el enemigo de lado, pierde una vida
 
             else if (
                 jugador.invulnerable <= 0
@@ -2902,34 +2760,29 @@ function actualizarEnemigos(dt, tiempo) {
     });
 }
 
-
-/* ============================================================
-   DERROTAR ENEMIGO
-
-   El enemigo desaparece y entrega puntos.
-   ============================================================ */
+// derrotar enemigo 
 
 function derrotarEnemigo(
     en,
     puntosGanados
 ) {
 
-    // Evitar entregar puntos repetidos.
+    // Evitar entregar puntos repetidos
     if (!en.vivo) {
 
         return;
     }
 
 
-    // Cambiar estado.
+    // Cambiar estado
     en.vivo = false;
 
 
-    // Tiempo de animacion.
+    // Tiempo de animacion
     en.tiempoMuerto = 0.5;
 
 
-    // Aplastar visualmente.
+    // Aplastar 
     en.malla.scale.set(
         1.2,
         0.25,
@@ -2937,7 +2790,7 @@ function derrotarEnemigo(
     );
 
 
-    // Sumar recompensa.
+    // Sumar recompensa
     puntos += puntosGanados;
 }
 
@@ -2945,19 +2798,11 @@ function derrotarEnemigo(
 /* ============================================================
    12. PARTICULAS Y ANIMACIONES
 
-   Cuando se rompe un ladrillo aparecen fragmentos
-   que utilizan el material del bloque.
-
-   Tambien actualizamos las gemas sorpresa creadas
-   desde la Parte 3.
+   que cuando se rompe un ladrillo aparecen fragmentos
+   que utilizan el material del bloque
    ============================================================ */
 
-
-/* ============================================================
-   GEOMETRIA DE LOS FRAGMENTOS
-
-   Los fragmentos son cubos pequeños.
-   ============================================================ */
+//fragmentos 
 
 const GEO_PEDAZO =
     new THREE.BoxGeometry(
@@ -2969,8 +2814,6 @@ const GEO_PEDAZO =
 
 /* ============================================================
    CREAR PARTICULAS
-
-   Parametros:
 
    x, y     = Posicion inicial
    material = Material del bloque
@@ -2990,9 +2833,7 @@ function crearParticulas(
         i++
     ) {
 
-        /* ----------------------------------------------------
-           CREAR FRAGMENTO
-           ---------------------------------------------------- */
+ //crear el fragmento
 
         const malla = new THREE.Mesh(
 
@@ -3002,7 +2843,7 @@ function crearParticulas(
         );
 
 
-        // Posicion inicial.
+        // Posicion inicial
         malla.position.set(
             x,
             y,
@@ -3010,65 +2851,44 @@ function crearParticulas(
         );
 
 
-        // Añadir al escenario.
+        // Añadir al escenario
         grupoNivel.add(malla);
 
 
-        /* ----------------------------------------------------
-           GUARDAR MOVIMIENTO DE LA PARTICULA
-           ---------------------------------------------------- */
+// movimiento particulas 
 
         particulas.push({
 
             malla: malla,
 
 
-            // Velocidad horizontal aleatoria.
+            // Velocidad horizontal 
             vx: (Math.random() - 0.5) * 6,
 
 
-            // Velocidad vertical.
+            // Velocidad vertical
             vy: 5 + Math.random() * 5,
 
 
-            // Velocidad en profundidad.
+            // Velocidad en profundidad
             vz: (Math.random() - 0.5) * 6,
 
 
-            // Duracion de la particula.
+            // Duracion de la particula
             vida: 1.2,
 
 
-            // Velocidad de giro.
+            // Velocidad de giro
             gira: 10,
 
 
-            // Gravedad.
+            // Gravedad
             gravedad: CONFIG.GRAVEDAD
         });
     }
 }
 
-
-/* ============================================================
-   ACTUALIZAR PARTICULAS Y GEMAS
-
-   Esta funcion sirve para:
-   - Fragmentos de ladrillo.
-   - Gemas de cajas sorpresa.
-
-   Todas las particulas comparten:
-   vx, vy, vz, vida, gira y gravedad.
-   ============================================================ */
-
 function actualizarParticulas(dt) {
-
-    /* --------------------------------------------------------
-       RECORRER PARTICULAS DE ATRAS HACIA ADELANTE
-
-       Esto permite eliminarlas sin alterar
-       el recorrido del arreglo.
-       -------------------------------------------------------- */
 
     for (
         let i = particulas.length - 1;
@@ -3078,17 +2898,12 @@ function actualizarParticulas(dt) {
 
         const p = particulas[i];
 
-
-        /* ----------------------------------------------------
-           APLICAR GRAVEDAD
-           ---------------------------------------------------- */
+//gravedad
 
         p.vy += p.gravedad * dt;
 
 
-        /* ----------------------------------------------------
-           ACTUALIZAR POSICIONES
-           ---------------------------------------------------- */
+  //posiciones
 
         p.malla.position.x +=
             p.vx * dt;
@@ -3102,9 +2917,7 @@ function actualizarParticulas(dt) {
             p.vz * dt;
 
 
-        /* ----------------------------------------------------
-           ANIMAR ROTACION
-           ---------------------------------------------------- */
+  //rotación
 
         p.malla.rotation.x +=
             p.gira * dt;
@@ -3114,16 +2927,12 @@ function actualizarParticulas(dt) {
             p.gira * dt;
 
 
-        /* ----------------------------------------------------
-           DISMINUIR TIEMPO DE VIDA
-           ---------------------------------------------------- */
+   //disminuir el tiempo de vida
 
         p.vida -= dt;
 
 
-        /* ----------------------------------------------------
-           ELIMINAR PARTICULAS CUANDO TERMINAN
-           ---------------------------------------------------- */
+      //eliminar particulas
 
         if (p.vida <= 0) {
 
@@ -3142,19 +2951,12 @@ function actualizarParticulas(dt) {
 
 
 /* ============================================================
-   ANIMAR BLOQUES Y BANDERAS
-
-   Los bloques se mueven brevemente cuando reciben
-   un golpe desde abajo.
-
-   La bandera final ondea ligeramente.
+ Animaciones de bloques y banderas
    ============================================================ */
 
 function animarNivel(dt, tiempo) {
 
-    /* --------------------------------------------------------
-       ANIMACION DE LOS BLOQUES
-       -------------------------------------------------------- */
+// animacion de bloques 
 
     bloques.forEach(b => {
 
@@ -3163,7 +2965,7 @@ function animarNivel(dt, tiempo) {
             b.rebote -= dt;
 
 
-            // Movimiento vertical del bloque.
+            // Movimiento vertical del bloque
             b.malla.position.y =
 
                 b.y + 0.5 +
@@ -3178,7 +2980,7 @@ function animarNivel(dt, tiempo) {
                 ) * 0.15;
 
 
-            // Restaurar posicion al finalizar.
+            // Restaurar posicion 
             if (b.rebote <= 0) {
 
                 b.rebote = 0;
@@ -3190,9 +2992,7 @@ function animarNivel(dt, tiempo) {
     });
 
 
-    /* --------------------------------------------------------
-       ANIMACION DE BANDERA FINAL
-       -------------------------------------------------------- */
+//Bandera de meta animacion
 
     if (banderaMeta) {
 
@@ -3207,25 +3007,18 @@ function animarNivel(dt, tiempo) {
 
 /* ============================================================
    13. CAMARA
-
-   La camara sigue a Junimo mientras avanza.
-
-   Conservamos la distancia original para evitar
-   cambiar la escala del mapa.
+sigue al jugador
    ============================================================ */
 
 function actualizarCamara(dt) {
 
-    // Suavidad de seguimiento.
+    // Suavidad de seguimiento
     const suavizado = Math.min(
         1,
         5 * dt
     );
 
-
-    /* --------------------------------------------------------
-       POSICION OBJETIVO EN X
-       -------------------------------------------------------- */
+//posicion en x
 
     const objetivoX = Math.max(
 
@@ -3234,10 +3027,7 @@ function actualizarCamara(dt) {
         jugador.x + 2
     );
 
-
-    /* --------------------------------------------------------
-       POSICION OBJETIVO EN Y
-       -------------------------------------------------------- */
+//posicion en y
 
     const objetivoY = Math.max(
 
@@ -3247,20 +3037,14 @@ function actualizarCamara(dt) {
     );
 
 
-    /* --------------------------------------------------------
-       SEGUIMIENTO HORIZONTAL
-       -------------------------------------------------------- */
+   //seguimiento horizontal
 
     camera.position.x +=
 
         (objetivoX - camera.position.x) *
 
         suavizado;
-
-
-    /* --------------------------------------------------------
-       SEGUIMIENTO VERTICAL
-       -------------------------------------------------------- */
+//seguimiento vertical 
 
     camera.position.y +=
 
@@ -3269,11 +3053,11 @@ function actualizarCamara(dt) {
         suavizado;
 
 
-    // Mantener distancia original.
+    // Mantener distancia original
     camera.position.z = 14;
 
 
-    // Orientar camara hacia el escenario.
+    // Orientar camara hacia el escenario
     camera.lookAt(
 
         camera.position.x,
@@ -3284,16 +3068,12 @@ function actualizarCamara(dt) {
     );
 
 
-    // Actualizar la iluminacion.
+    // Actualizar iluminacion
     moverSol();
 }
 
-
-/* ============================================================
-   MOVIMIENTO DE LA LUZ SOLAR
-
-   La luz acompaña a la camara.
-   ============================================================ */
+//Movimiento de luz solar 
+//acompaña a la camara 
 
 function moverSol() {
 
@@ -3321,7 +3101,7 @@ function moverSol() {
 /* ============================================================
    14. INTERFAZ DEL JUEGO
 
-   Elementos HTML:
+   Elementos HTML
 
    hud-vidas
    hud-puntos
@@ -3371,11 +3151,7 @@ const ui = {
 };
 
 
-/* ============================================================
-   MOSTRAR U OCULTAR PANTALLAS
-
-   Si el elemento no existe, no interrumpe el juego.
-   ============================================================ */
+//muestra u oculta pantallas 
 
 function mostrarPantalla(elemento, visible) {
 
@@ -3391,28 +3167,25 @@ function mostrarPantalla(elemento, visible) {
     );
 }
 
-
 /* ============================================================
    ACTUALIZAR HUD
 
-   HUD significa Heads-Up Display.
-
-   Muestra:
-   - Vidas
-   - Puntos
-   - Tiempo restante
+   Muestra
+   Vidas
+   Puntos
+   Tiempo restante
    ============================================================ */
 
 function actualizarHUD() {
 
-    // Mostrar vidas.
+    // Mostrar vidas
     if (ui.vidas) {
 
         ui.vidas.textContent = vidas;
     }
 
 
-    // Mostrar puntos con seis digitos.
+    // Mostrar puntos 
     if (ui.puntos) {
 
         ui.puntos.textContent =
@@ -3424,7 +3197,7 @@ function actualizarHUD() {
     }
 
 
-    // Mostrar tiempo restante.
+    // Mostrar tiempo restante
     if (ui.tiempo) {
 
         ui.tiempo.textContent =
@@ -3435,14 +3208,7 @@ function actualizarHUD() {
     }
 }
 
-
-/* ============================================================
-   MOSTRAR AVISOS
-
-   Ejemplos:
-   ¡PUNTO DE CONTROL!
-   ¡GEMA SORPRESA! +100
-   ============================================================ */
+//avisos
 
 let temporizadorAviso = null;
 
@@ -3455,24 +3221,24 @@ function mostrarAviso(texto) {
     }
 
 
-    // Escribir mensaje.
+    // Escribir mensaje
     ui.aviso.textContent = texto;
 
 
-    // Mostrar aviso.
+    // Mostrar aviso
     mostrarPantalla(
         ui.aviso,
         true
     );
 
 
-    // Cancelar aviso anterior.
+    // Cancelar aviso anterior
     clearTimeout(
         temporizadorAviso
     );
 
 
-    // Ocultar despues de 1.5 segundos.
+    // Ocultar despues de 1.5 segundos
     temporizadorAviso = setTimeout(
         () => {
 
@@ -3486,13 +3252,10 @@ function mostrarAviso(texto) {
     );
 }
 
-
-/* ============================================================
-   BOTONES DEL JUEGO
-   ============================================================ */
+//Botones
 
 
-// Boton para iniciar.
+// Boton para iniciar
 const botonJugar =
     document.getElementById('btn-jugar');
 
@@ -3508,7 +3271,7 @@ if (botonJugar) {
 }
 
 
-// Boton para reiniciar.
+// Boton para reiniciar
 const botonReiniciar =
     document.getElementById('btn-reiniciar');
 
@@ -3536,38 +3299,31 @@ if (botonReiniciar) {
 let estado = 'inicio';
 
 
-// Vidas iniciales.
+// Vidas iniciales
 let vidas = CONFIG.VIDAS_INICIALES;
 
 
-// Puntuacion.
+// Puntuacion
 let puntos = 0;
 
 
-// Temporizador.
+// Temporizador
 let tiempoRestante =
     CONFIG.TIEMPO_NIVEL;
 
 
-// Tiempo de animacion de muerte.
+// Tiempo de animacion muerte
 let tiempoMuerte = 0;
 
 
-// Temporizador de pantalla final.
+// Temporizador de pantalla final
 let temporizadorFinal = null;
 
 
-/* ============================================================
-   INICIAR JUEGO
-
-   Se ejecuta al presionar JUGAR o REINICIAR.
-   ============================================================ */
+//El juego inicia al presionar el boton de jugar
 
 function iniciarJuego() {
 
-    /* --------------------------------------------------------
-       REINICIAR VARIABLES
-       -------------------------------------------------------- */
 
     vidas = CONFIG.VIDAS_INICIALES;
 
@@ -3578,8 +3334,7 @@ function iniciarJuego() {
 
     tiempoMuerte = 0;
 
-
-    // Cancelar pantallas finales pendientes.
+    //cancela pantallas 
     clearTimeout(
         temporizadorFinal
     );
@@ -3587,26 +3342,17 @@ function iniciarJuego() {
     clearTimeout(
         temporizadorAviso
     );
-
-
-    /* --------------------------------------------------------
-       RECONSTRUIR EL MAPA
-
-       Las cajas destruidas o usadas se restauran.
-       Los enemigos vuelven a sus posiciones originales.
-       -------------------------------------------------------- */
+//reconstruir mapa
 
     construirNivel();
 
 
-    /* --------------------------------------------------------
-       COLOCAR A JUNIMO AL INICIO
-       -------------------------------------------------------- */
+}//coloca al jugador en el inicio
 
     reaparecerJugador();
 
 
-    // Al comenzar no necesita invulnerabilidad.
+    // 0 invulnerable cuando inicia 
     jugador.invulnerable = 0;
 
 
@@ -3617,10 +3363,7 @@ function iniciarJuego() {
         14
     );
 
-
-    /* --------------------------------------------------------
-       OCULTAR PANTALLAS
-       -------------------------------------------------------- */
+//oculta pantallas
 
     mostrarPantalla(
         ui.inicio,
@@ -3643,26 +3386,20 @@ function iniciarJuego() {
     );
 
 
-    // Cambiar estado.
+    // Cambiar estado
     estado = 'jugando';
 
 
-    // Actualizar indicadores.
+    // Actualizar indicadores
     actualizarHUD();
-}
 
 
-/* ============================================================
-   PAUSAR Y REANUDAR EL JUEGO
 
-   Se controla mediante la tecla P.
-   ============================================================ */
+// pausa o reanudar el juego
 
 function alternarPausa() {
 
-    /* --------------------------------------------------------
-       ACTIVAR PAUSA
-       -------------------------------------------------------- */
+//pausa activa
 
     if (estado === 'jugando') {
 
@@ -3676,9 +3413,7 @@ function alternarPausa() {
     }
 
 
-    /* --------------------------------------------------------
-       REANUDAR PARTIDA
-       -------------------------------------------------------- */
+//reanudar partida
 
     else if (estado === 'pausa') {
 
@@ -3691,19 +3426,12 @@ function alternarPausa() {
         );
 
 
-        // Reiniciar medicion de tiempo.
+        // Reiniciar medicion de tiempo
         reloj.getDelta();
     }
 }
 
-
-/* ============================================================
-   GANAR EL NIVEL
-
-   Junimo gana cuando llega a la bandera de meta.
-
-   Recibe una bonificacion por tiempo restante.
-   ============================================================ */
+//Ganar nivel
 
 function ganarNivel() {
 
@@ -3713,7 +3441,7 @@ function ganarNivel() {
     }
 
 
-    // Bonificacion de tiempo.
+    // Bonificacion de tiempo
     const bonus =
 
         Math.ceil(
@@ -3721,17 +3449,16 @@ function ganarNivel() {
         ) * 10;
 
 
-    // Sumar bonificacion.
+    // Sumar bonificacion
     puntos += bonus;
 
 
-    // Mostrar pantalla de victoria.
+    // Mostrar pantalla de victoria
     terminarJuego(
         true,
         bonus
     );
 }
-
 
 /* ============================================================
    TERMINAR PARTIDA
@@ -3745,19 +3472,17 @@ function terminarJuego(
     bonus = 0
 ) {
 
-    // Actualizar estado.
+    // Actualizar estado
     estado = gano
         ? 'victoria'
         : 'gameover';
 
 
-    // Actualizar HUD.
+    // Actualizar HUD
     actualizarHUD();
 
 
-    /* --------------------------------------------------------
-       TITULO FINAL
-       -------------------------------------------------------- */
+  //Titulo Final
 
     if (ui.finTitulo) {
 
@@ -3768,10 +3493,7 @@ function terminarJuego(
             : 'GAME OVER';
     }
 
-
-    /* --------------------------------------------------------
-       MOSTRAR RESULTADOS
-       -------------------------------------------------------- */
+//results
 
     if (ui.finDetalle) {
 
@@ -3784,10 +3506,7 @@ function terminarJuego(
             : `Puntos: ${puntos}`;
     }
 
-
-    /* --------------------------------------------------------
-       MOSTRAR PANTALLA FINAL
-       -------------------------------------------------------- */
+//pantalla final
 
     clearTimeout(
         temporizadorFinal
@@ -3807,13 +3526,10 @@ function terminarJuego(
     );
 }
 
-
 /* ============================================================
-   BUCLE PRINCIPAL DEL VIDEOJUEGO
+   BUCLE
 
-   Esta funcion controla todo el juego.
-
-   En cada fotograma actualiza:
+   En cada fotograma actualiza
    - Jugador
    - Enemigos
    - Gemas y particulas
@@ -3821,11 +3537,9 @@ function terminarJuego(
    - Temporizador
    - Camara
    - Interfaz
-
-   Al final dibuja la escena con Three.js.
    ============================================================ */
 
-// Reloj de Three.js.
+// Reloj de Three.js
 const reloj = new THREE.Clock();
 
 
@@ -3835,12 +3549,7 @@ const reloj = new THREE.Clock();
 
 function animate() {
 
-    /* --------------------------------------------------------
-       CALCULAR TIEMPO ENTRE FOTOGRAMAS
-
-       dt se limita para evitar movimientos grandes
-       cuando el navegador pierde velocidad.
-       -------------------------------------------------------- */
+    //calcular tiempo entre fotogramas
 
     const dt = Math.min(
 
@@ -3850,29 +3559,19 @@ function animate() {
     );
 
 
-    // Tiempo acumulado para animaciones.
+    // Tiempo acumulado para animaciones
     const tiempo = reloj.elapsedTime;
 
 
-    /* ========================================================
-       ESTADO JUGANDO
-       ======================================================== */
+  //estado jugando 
 
     if (estado === 'jugando') {
 
-        /* ----------------------------------------------------
-           ACTUALIZAR JUNIMO
-           ---------------------------------------------------- */
+      //actualiza a junimo
 
         actualizarJugador(dt);
 
-
-        /* ----------------------------------------------------
-           ACTUALIZAR ENEMIGOS
-
-           Se comprueba nuevamente el estado porque Junimo
-           puede haber alcanzado la meta o perdido una vida.
-           ---------------------------------------------------- */
+//actualiza enemigos
 
         if (estado === 'jugando') {
 
@@ -3881,56 +3580,43 @@ function animate() {
                 tiempo
             );
         }
-
-
-        /* ----------------------------------------------------
-           ACTUALIZAR TEMPORIZADOR
-           ---------------------------------------------------- */
+//actualiza temporizador
 
         if (estado === 'jugando') {
 
             tiempoRestante -= dt;
 
 
-            // Tiempo agotado.
+            // Tiempo agotado
             if (tiempoRestante <= 0) {
 
                 tiempoRestante = 0;
 
 
-                // Perder vida.
+                // Perder vida
                 perderVida(true);
             }
         }
     }
 
-
-    /* ========================================================
-       ESTADO MURIENDO
-       ======================================================== */
-
+//estado muriendo
     else if (estado === 'muriendo') {
 
         actualizarMuerte(dt);
     }
 
-
-    /* ========================================================
-       ACTUALIZAR ANIMACIONES
-
-       No se actualizan durante la pausa.
-       ======================================================== */
+//actualizar animaciones
 
     if (
         estado !== 'pausa' &&
         estado !== 'inicio'
     ) {
 
-        // Fragmentos de ladrillo y gemas sorpresa.
+        // Fragmentos de ladrillo y gemas sorpresa
         actualizarParticulas(dt);
 
 
-        // Rebote de cajas y bandera.
+        // Rebote de cajas y bandera
         animarNivel(
             dt,
             tiempo
@@ -3938,27 +3624,18 @@ function animate() {
     }
 
 
-    /* ========================================================
-       CAMARA Y HUD
-       ======================================================== */
+    //camara y HUD
 
     if (estado !== 'inicio') {
 
-        // Seguir al jugador.
+        // Seguir al jugador
         actualizarCamara(dt);
 
 
-        // Actualizar vidas, puntos y tiempo.
+        // Actualizar vidas, puntos y tiempo
         actualizarHUD();
     }
-
-
-    /* ========================================================
-       CAMARA DEL MENU INICIAL
-
-       La camara se desplaza suavemente mientras
-       se muestra la pantalla de bienvenida.
-       ======================================================== */
+// Camara del menu inicial 
 
     else {
 
@@ -3983,30 +3660,16 @@ function animate() {
         );
 
 
-        // Ajustar iluminacion.
+        // Ajustar iluminacion
         moverSol();
     }
-
-
-    /* ========================================================
-       RENDERIZAR ESCENA
-
-       Dibujar el mapa, Junimo, enemigos y texturas.
-       ======================================================== */
+//renderizar escen
 
     renderer.render(
         scene,
         camera
     );
 }
-
-
-/* ============================================================
-   ARRANQUE DEL VIDEOJUEGO
-
-   Se ejecuta automaticamente cuando se carga game.js.
-   ============================================================ */
-
 
 // Mostrar pantalla inicial.
 mostrarPantalla(
@@ -4015,30 +3678,24 @@ mostrarPantalla(
 );
 
 
-// Construir el escenario con las texturas.
+// Construir el escenario con las texturas
 construirNivel();
 
 
-// Colocar Junimo al inicio.
+// Colocar Junimo al inicio
 reaparecerJugador();
 
 
-// Actualizar posicion visual del personaje.
+// Actualizar posicion visual del personaje
 actualizarModeloJugador(0);
 
 
-// Actualizar indicadores.
+// Actualizar indicadores
 actualizarHUD();
 
 
-// Iniciar animacion permanente.
+// Iniciar animacion permanente
 renderer.setAnimationLoop(
     animate
 );
 
-
-/* ============================================================
-   FIN DEL CODIGO COMPLETO
-
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   ============================================================ */

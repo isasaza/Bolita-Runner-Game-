@@ -1,5 +1,5 @@
 /* =====================================================================
-   JUNIMO RUNNER MEJORADO
+   RUNNER MEJORADO
 
    1. Configuración
    2. Diseño del nivel
@@ -1423,10 +1423,7 @@ function rampaEn(x) {
         r => x >= r.x0 && x <= r.x1
     ) || null;
 }
-
-/* =====================================================================
-   CONSTRUCCIÓN 3D DE LA RAMPA
-   ===================================================================== */
+//construccion 3d rampa 
 
 function crearRampa(r) {
 
@@ -1653,10 +1650,11 @@ const teclaSaltoPresionada = () =>
     teclas['KeyW'];
 
 
-// Tecla Shift pa correr.
+// Tecla Shift pa correr
 const teclaCorrer = () =>
     teclas['ShiftLeft'] ||
     teclas['ShiftRight'];
+
     /* =====================================================================
    8. FÍSICA Y COLISIONES
 
@@ -1791,15 +1789,7 @@ function moverEntidad(ent, dt, alGolpearTecho) {
         ent.vy = 0;
     }
 }
-
-
-/* =====================================================================
-   COLISIÓN CON RAMPAS
-
-   Calculamos la altura de apoyo y la pendiente.
-   ===================================================================== */
-
-function resolverRampa(ent, dt) {
+//colision con rampa
 
     ent.enRampa = false;
     ent.pendiente = 0;
@@ -1835,7 +1825,7 @@ function resolverRampa(ent, dt) {
 
         ent.pendiente = pendiente;
     }
-}
+
 
 
 // Comprueba si dos entidades se superponen
@@ -1874,20 +1864,12 @@ function golpearBloque(listaBloques) {
                 ? b
                 : mejor
     );
-
-
-    // -------------------------------------------------------------
-    // CAJA DE MADERA
-    // -------------------------------------------------------------
+//caja madera
 
     if (bloque.tipo === 'B') {
 
         destruirBloque(bloque);
-
-
-    // -------------------------------------------------------------
-    // CAJA MISTERIOSA
-    // -------------------------------------------------------------
+//caja misteriosa 
 
     } else if (bloque.tipo === 'G') {
 
@@ -1911,10 +1893,7 @@ function golpearBloque(listaBloques) {
 
         mostrarAviso('¡FRUTA ESTELAR! +300');
 
-
-    // -------------------------------------------------------------
-    // OTROS BLOQUES
-    // -------------------------------------------------------------
+//otros bloques
 
     } else {
 
@@ -1935,14 +1914,7 @@ function golpearBloque(listaBloques) {
         }
     });
 }
-
-
-/* =====================================================================
-   DESTRUIR CAJAS DE MADERA
-
-   Se eliminan del escenario y del sistema de colisiones
-   ===================================================================== */
-
+//destruir cajas de madera
 function destruirBloque(bloque) {
 
     // Eliminar visualmente
@@ -2151,10 +2123,7 @@ function actualizarJugador(dt) {
         Math.min(limite, j.vx)
     );
 
-
-    // -------------------------------------------------------------
-    // SALTO CON TIEMPO COYOTE
-    // -------------------------------------------------------------
+//salto coyote 
 
     j.tiempoCoyote = j.enSuelo
         ? CONFIG.TIEMPO_COYOTE
@@ -2177,11 +2146,7 @@ function actualizarJugador(dt) {
 
         j.saltando = true;
     }
-
-
-    // -------------------------------------------------------------
-    // ALTURA VARIABLE DEL SALTO
-    // -------------------------------------------------------------
+//altura del salto 
 
     if (
         j.saltando &&
@@ -2198,11 +2163,7 @@ function actualizarJugador(dt) {
     if (j.vy <= 0) {
         j.saltando = false;
     }
-
-
-    // -------------------------------------------------------------
-    // GRAVEDAD
-    // -------------------------------------------------------------
+// gravedad
 
     const g = j.vy < 0
         ? CONFIG.GRAVEDAD * CONFIG.MULT_CAIDA
@@ -2218,10 +2179,7 @@ function actualizarJugador(dt) {
         CONFIG.VEL_MAX_CAIDA
     );
 
-
-    // -------------------------------------------------------------
-    // MOVIMIENTO Y COLISIONES
-    // -------------------------------------------------------------
+//moviimiento y colisiones
 
     const estabaEnSuelo = j.enSuelo;
 
@@ -2257,11 +2215,7 @@ function actualizarJugador(dt) {
             Math.abs(vyAntes) * 0.015
         );
     }
-
-
-    // -------------------------------------------------------------
-    // RODAR POR RAMPAS
-    // -------------------------------------------------------------
+//rodar
 
     if (
         j.enRampa &&
@@ -2278,11 +2232,7 @@ function actualizarJugador(dt) {
 
         j.rodando = false;
     }
-
-
-    // -------------------------------------------------------------
-    // CAÍDA AL VACÍO
-    // -------------------------------------------------------------
+//cae al vacio 
 
     if (j.y < CONFIG.LIMITE_CAIDA) {
 
@@ -2290,11 +2240,7 @@ function actualizarJugador(dt) {
 
         return;
     }
-
-
-    // -------------------------------------------------------------
-    // PUNTO DE CONTROL
-    // -------------------------------------------------------------
+// punto control 
 
     if (
         puntoControl &&
@@ -2312,11 +2258,7 @@ function actualizarJugador(dt) {
 
         mostrarAviso('¡PUNTO DE CONTROL!');
     }
-
-
-    // -------------------------------------------------------------
-    // META FINAL
-    // -------------------------------------------------------------
+//meta 
 
     if (
         banderaMeta &&
@@ -2327,11 +2269,7 @@ function actualizarJugador(dt) {
 
         return;
     }
-
-
-    // -------------------------------------------------------------
-    // INVULNERABILIDAD TEMPORAL
-    // -------------------------------------------------------------
+//invulnerabilidad 
 
     if (j.invulnerable > 0) {
 
@@ -2362,11 +2300,7 @@ function actualizarModeloJugador(dt) {
 
 
     const partes = m.userData;
-
-
-    // -------------------------------------------------------------
-    // ANIMACIÓN AL RODAR
-    // -------------------------------------------------------------
+//animacion cuando rueda 
 
     if (j.rodando) {
 
@@ -2376,10 +2310,7 @@ function actualizarModeloJugador(dt) {
         partes.extremidades.visible = false;
 
 
-    // -------------------------------------------------------------
-    // ANIMACIÓN AL CAMINAR
-    // -------------------------------------------------------------
-
+    // animación mientras camina 
     } else {
 
         // Recuperar orientación vertical del cuerpo
@@ -2417,12 +2348,7 @@ function actualizarModeloJugador(dt) {
 }
 
 
-/* =====================================================================
-   SISTEMA DE VIDAS
-
-   Cuando Junimo recibe daño
-   - Pierde una vida, se reproduce una animación, reaparece en el inicio o checkpoint.
-   ===================================================================== */
+// sistema vidas
 
 function perderVida(conAnimacion) {
 
@@ -2442,12 +2368,7 @@ function perderVida(conAnimacion) {
 
     jugador.vx = 0;
 }
-
-
-/* =====================================================================
-   ANIMACIÓN DE MUERTE Y REAPARICIÓN
-   ===================================================================== */
-
+//animacon muerte y reaparecer jugador
 function actualizarMuerte(dt) {
 
     tiempoMuerte -= dt;
@@ -2489,10 +2410,7 @@ function actualizarMuerte(dt) {
         }
     }
 }
-/* =====================================================================
-   11. ENEMIGOS
-   ===================================================================== */
-
+// 1. Enemigos 
 function actualizarEnemigos(dt, tiempo) {
 
     enemigos.forEach(en => {
@@ -2578,9 +2496,7 @@ function actualizarEnemigos(dt, tiempo) {
         );
 
 
-        /* -------------------------------------------------------------
-           COLISIÓN ENTRE JUNIMO Y ENEMIGOS
-           ------------------------------------------------------------- */
+        //colision jugador y enemigo
 
         if (estado === 'jugando' && en.vivo) {
 
@@ -2632,9 +2548,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
     });
 }
-/* =====================================================================
-   DERROTAR ENEMIGOS
-   ===================================================================== */
+//derrotar enemigos
 
 function derrotarEnemigo(en, puntosGanados) {
 
@@ -2779,7 +2693,7 @@ function animarNivel(dt, tiempo) {
     });
 
 
-    // Bandera de meta ondeando
+    // Bandera de meta 
     if (banderaMeta) {
 
         banderaMeta.bandera.userData.tela.rotation.y =
@@ -2881,10 +2795,6 @@ const ui = {
 };
 
 
-/* =====================================================================
-   ACTUALIZAR INDICADORES
-   ===================================================================== */
-
 function actualizarHUD() {
 
     ui.vidas.textContent = vidas;
@@ -2900,10 +2810,7 @@ function actualizarHUD() {
 }
 
 
-/* =====================================================================
-   AVISOS EN PANTALLA
-   ===================================================================== */
-
+//avisos
 let temporizadorAviso = null;
 
 
@@ -2924,10 +2831,7 @@ function mostrarAviso(texto) {
     }, 1500);
 }
 
-/* =====================================================================
-   BOTONES DEL JUEGO
-   ===================================================================== */
-
+//botones
 // Botón de inicio
 const botonJugar =
     document.getElementById('btn-jugar');
@@ -2973,9 +2877,7 @@ let tiempoRestante = CONFIG.TIEMPO_NIVEL;
 let tiempoMuerte = 0;
 
 
-/* =====================================================================
-   INICIAR UNA PARTIDA NUEVA
-   ===================================================================== */
+//partida nueva
 
 function iniciarJuego() {
 
@@ -3022,9 +2924,7 @@ function iniciarJuego() {
 
     actualizarHUD();
 }
-/* =====================================================================
-   PAUSAR Y REANUDAR
-   ===================================================================== */
+//pausar y reanudar
 
 function alternarPausa() {
 
@@ -3047,9 +2947,7 @@ function alternarPausa() {
     }
 }
 
-/* =====================================================================
-   VICTORIA
-   ===================================================================== */
+//victoria 
 
 function ganarNivel() {
 
@@ -3063,9 +2961,7 @@ function ganarNivel() {
 }
 
 
-/* =====================================================================
-   PANTALLA FINAL
-   ===================================================================== */
+//pantalla final
 
 function terminarJuego(gano, bonus = 0) {
 
@@ -3209,11 +3105,6 @@ function animate() {
     // Dibujar escena 3D.
     renderer.render(scene, camera);
 }
-
-
-/* =====================================================================
-   ARRANQUE DEL JUEGO
-   ===================================================================== */
 
 // Mostrar pantalla de inicio
 ui.inicio.classList.remove('oculto');

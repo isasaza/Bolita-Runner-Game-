@@ -321,13 +321,33 @@ aplicarTextura(
 );
 
 
-// Mantiene el fondo siguiendo la cámara.
-function actualizarFondo() {
+/* =====================================================================
+   FONDO CON PARALLAX
 
-    fondos.forEach(f => {
-        f.malla.position.x =
-            camera.position.x;
-    });
+   Dos capas HTML detrás del canvas (transparente):
+   - #fondo-montanas: lejanas, se mueven poco.
+   - #fondo-nubes: se mueven más con la cámara y además derivan solas.
+   ===================================================================== */
+
+const capaMontanas = document.getElementById('fondo-montanas');
+const capaNubes = document.getElementById('fondo-nubes');
+
+let derivaNubes = 0;
+
+function actualizarFondo(dt = 0) {
+
+    // Las nubes avanzan solas, aunque Junimo esté quieto.
+    derivaNubes += 15 * dt;
+
+    const x = camera.position.x;
+
+    // Montañas: lejanas, se mueven poco.
+    capaMontanas.style.backgroundPositionX =
+        `${-x * 6}px`;
+
+    // Nubes: se mueven con la cámara y además derivan.
+    capaNubes.style.backgroundPositionX =
+        `${-x * 18 - derivaNubes}px`;
 }
 
 
@@ -2936,7 +2956,7 @@ function actualizarCamara(dt) {
     moverSol();
 
     // Mantener el fondo siguiendo a Junimo.
-    actualizarFondo();
+    actualizarFondo(dt);
 }
 
 
@@ -3322,7 +3342,7 @@ function animate() {
 
         moverSol();
 
-        actualizarFondo();
+        actualizarFondo(dt);
     }
 
 

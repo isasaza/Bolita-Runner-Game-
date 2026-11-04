@@ -126,32 +126,34 @@ button:active {
 }
 
 /* =====================================================
-   FONDO ESTÁTICO DE JUNIMO RUNNER
+   FONDO CON PARALLAX
    ===================================================== */
 
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
 body {
-    background-color: #6ec6ff;
-
-    background-image:
-        url("../img/texture/montanas.png");
-
-    background-position: center center;
-    background-repeat: no-repeat;
-
-    /* Ajusta el paisaje a toda la pantalla */
-    background-size: cover;
-
-    /* El paisaje no se mueve */
-    background-attachment: fixed;
+    background-color: #6ec6ff; /* cielo de respaldo */
 }
 
-/* Canvas transparente delante del paisaje */
+.capa-fondo {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: repeat-x;
+}
+
+#fondo-montanas {
+    z-index: -2;
+    background-image: url("../img/texture/montanas.png");
+    background-size: auto 70%;      /* ajusta la altura de las montañas */
+    background-position: 0 bottom;
+}
+
+#fondo-nubes {
+    z-index: -1;
+    background-image: url("../img/texture/nubes.png");
+    background-size: auto 40%;      /* ajusta el tamaño de las nubes */
+    background-position: 0 top;
+}
+
 body > canvas {
     position: fixed;
     inset: 0;

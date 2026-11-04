@@ -1791,6 +1791,9 @@ function moverEntidad(ent, dt, alGolpearTecho) {
 }
 //colision con rampa
 
+function resolverRampa(ent,dt){   
+
+
     ent.enRampa = false;
     ent.pendiente = 0;
 
@@ -1841,6 +1844,9 @@ function seSuperponen(a, b) {
     );
 }
 
+
+
+}
 /* =====================================================================
    9. BLOQUES Y CAJAS MISTERIOSAS
 

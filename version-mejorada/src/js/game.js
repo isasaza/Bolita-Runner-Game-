@@ -56,7 +56,7 @@ const CONFIG = {
 
     // Movimiento de Junimo sobre las rampas.
     G_RAMPA: 30,
-    VEL_RODAR: 13,
+    VEL_RODAR: 10,
     FRICCION_RODAR: 5
 };
 
@@ -361,7 +361,7 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 
             malla.position.set(
                 0,
-                alto / 2 - 2,
+                5,
                 z
             );
 
@@ -389,7 +389,7 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 agregarFondo(
     'cielo.png',
     -55,
-    32,
+    35,
     100,
     1
 );
@@ -397,17 +397,17 @@ agregarFondo(
 agregarFondo(
     'montanas.png',
     -45,
-    24,
-    90,
-    0.95
+    20,
+    100,
+    1
 );
 
 agregarFondo(
     'nubes.png',
     -35,
-    23,
-    90,
-    0.85
+    20,
+    100,
+    1
 );
 
 
@@ -527,7 +527,7 @@ const GEO_BLOQUE =
     new THREE.BoxGeometry(1, 1, 1);
 
 const GEO_TIERRA =
-    new THREE.BoxGeometry(1, 4, 1);
+    new THREE.BoxGeometry(1, 2, 1);
 
 
 /* =====================================================================
@@ -2988,7 +2988,7 @@ function actualizarCamara(dt) {
         suavizado;
 
 
-    camera.position.z = 14;
+    camera.position.z = 10;
 
 
     camera.lookAt(

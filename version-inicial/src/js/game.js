@@ -1,8 +1,5 @@
 /* ============================================================
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   PARTE 1 DE 5
-
-   Se conserva el mapa, la fisica y los niveles originales.
+   JUNIMO RUNNER - VERSION INICIAL 
    ============================================================ */
 
 import * as THREE from 'three';
@@ -44,7 +41,7 @@ const CONFIG = {
 
 
 /* ============================================================
-   2. MAPA ORIGINAL DEL NIVEL
+   2. MAPA 
 
    # = Suelo
    T = Tierra
@@ -77,13 +74,13 @@ const MAPA_NIVEL = [
 ];
 
 
-// Bloques solidos con colision.
+// Bloques con colision
 const SOLIDOS = new Set([
     "#", "T", "=", "B", "G", "U", "S", "C", "L"
 ]);
 
 
-// Rampas originales.
+// Rampa
 const RAMPAS = [
     {
         x0: 71,
@@ -94,7 +91,7 @@ const RAMPAS = [
 ];
 
 
-// Estanques originales.
+// Agua estanq
 const ESTANQUES = [
     { x0: 36, x1: 38 },
     { x0: 94, x1: 102 }
@@ -113,7 +110,7 @@ scene.background = new THREE.Color(COLOR_CIELO);
 scene.fog = null;
 
 
-// Camara original del proyecto.
+// Camara 
 const camera = new THREE.PerspectiveCamera(
     50,
     window.innerWidth / window.innerHeight,
@@ -124,7 +121,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(5, 5, 14);
 
 
-// Renderizador.
+// Render
 const renderer = new THREE.WebGLRenderer({
     antialias: true
 });
@@ -144,7 +141,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 
-// Ajuste de pantalla.
+// pantalla
 window.addEventListener('resize', () => {
 
     renderer.setSize(
@@ -194,31 +191,22 @@ scene.add(luzSol.target);
 
 
 /* ============================================================
-   4. TEXTURAS DE LA PROFESORA
-
-   Carpeta:
-   version-inicial/src/img/texture/
-
-   No utilizamos recursos.js.
+   4. TEXTURAS
    ============================================================ */
 
-// Material de color para los objetos sencillos.
+// color para objetos 
 const material = color =>
     new THREE.MeshLambertMaterial({ color });
 
 
-// Carpeta de imagenes.
+// ruta imagenes
 const RUTA_TEXTURAS = './src/img/texture/';
 
 const textureLoader = new THREE.TextureLoader();
 
 
 /* ============================================================
-   FUNCION PARA CARGAR TEXTURAS
-
-   Intenta cargar el archivo principal.
-   Si falla, prueba los nombres alternativos.
-   Si no existe ninguno, conserva el color de respaldo.
+   CARGAR TEXTURAS
    ============================================================ */
 
 function materialConTextura(
@@ -271,7 +259,7 @@ function materialConTextura(
                 );
 
 
-                // Mantener la proporcion de la imagen.
+                // Mantener la imagen
                 const ancho = textura.image.width;
                 const alto = textura.image.height;
 
@@ -311,28 +299,28 @@ function materialConTextura(
    CARGA DE MATERIALES
    ============================================================ */
 
-// Pasto de la parte superior.
+// Pasto
 const matPasto = materialConTextura(
     ['pasto.jpg', 'pasto.png'],
     0x48a942
 );
 
 
-// Lados del suelo.
+// suelo
 const matSueloLado = materialConTextura(
     'suelo-lado.jpg',
     0x94613c
 );
 
 
-// Tierra.
+// Tierra
 const matTierra = materialConTextura(
     ['ground.jpg', 'tierra.png'],
     0x94613c
 );
 
 
-// Relleno inferior.
+// Relleno de la parte de abajo
 const matRelleno = materialConTextura(
     ['ground.jpg', 'tierra.png'],
     0x94613c,
@@ -340,7 +328,7 @@ const matRelleno = materialConTextura(
 );
 
 
-// Laterales de tierra.
+// tierra lateral
 const matTierraLado = materialConTextura(
     [
         'tierra-lado.png',
@@ -351,14 +339,14 @@ const matTierraLado = materialConTextura(
 );
 
 
-// Ladrillos.
+// Ladrillo
 const matLadrillo = materialConTextura(
     ['ladrillo.jpg', 'caja.png'],
     0xb47742
 );
 
 
-// Bloques sorpresa.
+// sorpresa
 const matSorpresa = materialConTextura(
     ['sorpresa.png', 'sorpresa.jpg'],
     0xf5b62d,
@@ -366,28 +354,28 @@ const matSorpresa = materialConTextura(
 );
 
 
-// Bloques utilizados.
+// Bloque usados
 const matUsado = materialConTextura(
     ['usado.jpg', 'vacio.png'],
     0x88898d
 );
 
 
-// Piedra.
+// Piedra
 const matPiedra = materialConTextura(
     ['piedra.jpg', 'roca.png'],
     0x80858a
 );
 
 
-// Columnas.
+// Columna
 const matColumna = materialConTextura(
     ['columna.jpg', 'pilar.png'],
     0x8d8680
 );
 
 
-// Troncos.
+// Tronco
 const matTronco = materialConTextura(
     'tronco.png',
     0x79512f
@@ -395,15 +383,7 @@ const matTronco = materialConTextura(
 
 
 /* ============================================================
-   MATERIALES DEL SUELO
-
-   Three.js permite un material diferente para
-   cada cara de un cubo.
-
-   Orden:
-   +X, -X, +Y, -Y, +Z, -Z
-
-   La cara +Y es la parte superior.
+   SUELO
    ============================================================ */
 
 const carasSuelo = [
@@ -415,9 +395,8 @@ const carasSuelo = [
     matSueloLado
 ];
 
-
 /* ============================================================
-   MATERIALES ASOCIADOS AL MAPA
+   MATERIALES MAPA
    ============================================================ */
 
 const MATERIALES = {
@@ -442,9 +421,8 @@ const MATERIALES = {
     rampaCima: matPasto
 };
 
-
 /* ============================================================
-   GEOMETRIAS REUTILIZABLES
+   GEOMETRIAS
    ============================================================ */
 
 const GEO_BLOQUE =
@@ -464,26 +442,8 @@ const MAT_GEMA_SORPRESA =
         emissive: 0x0b5560,
         shininess: 100
     });
-
-/* =============== FIN PARTE 1 =============== */
-/* ============================================================
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   PARTE 2 DE 5
-
-   5. MODELOS 3D
-   6. CONSTRUCCION DEL NIVEL
-   - Bloques con texturas
-   - Enemigos
-   - Rampas
-   - Estanques
-   ============================================================ */
-
-
 /* ============================================================
    5. MODELOS 3D
-
-   Los personajes conservan sus formas originales.
-   Las texturas se aplican principalmente al escenario.
    ============================================================ */
 
 const R_CUERPO = 0.38;
@@ -491,10 +451,7 @@ const Y_CENTRO = 0.4;
 
 
 /* ============================================================
-   CREAR MODELO DEL JUGADOR JUNIMO
-
-   Junimo es una esfera verde.
-   El grupo cuerpoRot permite que ruede.
+   MODELO DEL JUGADOR 
    ============================================================ */
 
 function crearModeloJugador() {
@@ -506,11 +463,11 @@ function crearModeloJugador() {
     cuerpoRot.position.y = Y_CENTRO;
 
 
-    // Material verde de Junimo.
+    // Material verde
     const matJugador = material(0x18cf32);
 
 
-    // Geometria esferica.
+    // esfera
     const geometriaJugador =
         new THREE.SphereGeometry(
             R_CUERPO,
@@ -519,7 +476,7 @@ function crearModeloJugador() {
         );
 
 
-    // Crear cuerpo.
+    // Crear cuerpo
     const cuerpo = new THREE.Mesh(
         geometriaJugador,
         matJugador
@@ -529,15 +486,15 @@ function crearModeloJugador() {
     cuerpo.receiveShadow = true;
 
 
-    // Añadir cuerpo al grupo giratorio.
+    // Añadir cuerpo al grupo giratorio
     cuerpoRot.add(cuerpo);
 
 
-    // Añadir grupo giratorio al personaje.
+    // Añadir grupo giratorio al personaje
     grupo.add(cuerpoRot);
 
 
-    // Guardar referencia para la animacion.
+    // animacion
     grupo.userData = {
         cuerpoRot
     };
@@ -545,12 +502,8 @@ function crearModeloJugador() {
 
     return grupo;
 }
-
-
 /* ============================================================
-   CREAR MODELO DEL ENEMIGO
-
-   El enemigo conserva su forma de esfera roja.
+ENEMIGO
    ============================================================ */
 
 function crearModeloEnemigo() {
@@ -558,7 +511,7 @@ function crearModeloEnemigo() {
     const grupo = new THREE.Group();
 
 
-    // Geometria del enemigo.
+    // Geometria enemigo
     const geometriaEnemigo =
         new THREE.SphereGeometry(
             0.35,
@@ -567,24 +520,21 @@ function crearModeloEnemigo() {
         );
 
 
-    // Material rojo.
+    // Material color rojo
     const matEnemigo = material(0xef2929);
 
 
-    // Crear esfera.
+    // esfera
     const esfera = new THREE.Mesh(
         geometriaEnemigo,
         matEnemigo
     );
 
 
-    // Colocar el centro a la altura correcta.
+    // altura correcta para los enemies
     esfera.position.y = 0.35;
 
     esfera.castShadow = true;
-
-
-    // Añadir al grupo.
     grupo.add(esfera);
 
 
@@ -594,10 +544,6 @@ function crearModeloEnemigo() {
 
 /* ============================================================
    CREAR BANDERAS
-
-   Se utilizan para:
-   - Punto de control
-   - Meta final
    ============================================================ */
 
 function crearBandera(color) {
@@ -605,7 +551,7 @@ function crearBandera(color) {
     const grupo = new THREE.Group();
 
 
-    // Poste de la bandera.
+    // Poste
     const poste = new THREE.Mesh(
 
         new THREE.CylinderGeometry(
@@ -626,7 +572,7 @@ function crearBandera(color) {
     grupo.add(poste);
 
 
-    // Dibujar triangulo de la bandera.
+    // triangulo de la bandera
     const forma = new THREE.Shape();
 
     forma.moveTo(0, 0);
@@ -638,7 +584,7 @@ function crearBandera(color) {
     forma.closePath();
 
 
-    // Material de la tela.
+    // Material tela
     const materialTela =
         new THREE.MeshBasicMaterial({
             color: color,
@@ -646,7 +592,7 @@ function crearBandera(color) {
         });
 
 
-    // Crear bandera.
+    // Crear bandera
     const tela = new THREE.Mesh(
         new THREE.ShapeGeometry(forma),
         materialTela
@@ -661,36 +607,20 @@ function crearBandera(color) {
 
 
     grupo.add(tela);
-
-
-    // Guardar referencia para cambiar el color.
     grupo.userData.tela = tela;
-
 
     return grupo;
 }
-
-
 /* ============================================================
    6. CONSTRUCCION DEL NIVEL
-
-   El mapa esta formado por caracteres.
-
-   Cada caracter representa:
-   - Un bloque
-   - Un enemigo
-   - Una bandera
-   - Una posicion especial
-
-   Los bloques se almacenan para calcular colisiones.
    ============================================================ */
 
 
-// Grupo principal del escenario.
+// Grupo escenario
 let grupoNivel = null;
 
 
-// Bloques y objetos.
+// Bloques y objetos
 let bloques = new Map();
 
 let enemigos = [];
@@ -698,43 +628,40 @@ let enemigos = [];
 let particulas = [];
 
 
-// Posicion inicial.
+// Posicion inicial
 let posicionInicial = {
     x: 2.5,
     y: 1
 };
 
 
-// Banderas.
+// Banderas
 let puntoControl = null;
 
 let banderaMeta = null;
-
-
-// Generar clave para identificar cada bloque.
 const clave = (x, y) => x + "," + y;
 
 
 /* ============================================================
-   CONSTRUIR EL MAPA COMPLETO
+   MAPA COMPLETO
    ============================================================ */
 
 function construirNivel() {
 
-    // Eliminar nivel anterior al reiniciar.
+    // Eliminar nivel anterior al reiniciar
     if (grupoNivel) {
 
         scene.remove(grupoNivel);
     }
 
 
-    // Crear nuevo grupo del nivel.
+    // Crear nuevo grupo del nivel
     grupoNivel = new THREE.Group();
 
     scene.add(grupoNivel);
 
 
-    // Reiniciar elementos.
+    // Reiniciar elementos
     bloques = new Map();
 
     enemigos = [];
@@ -746,26 +673,25 @@ function construirNivel() {
     banderaMeta = null;
 
 
-    // Construir rampas originales.
+    // Construir rampas
     RAMPAS.forEach(crearRampa);
 
 
-    // Construir estanques originales.
+    // Construir estanques 
     ESTANQUES.forEach(crearEstanque);
 
 
-    // Numero de filas del mapa.
+    // filas mapa
     const alto = MAPA_NIVEL.length;
 
 
-    // Recorrer todas las filas.
+    // Recorrer todas las filas
     MAPA_NIVEL.forEach((fila, y) => {
 
-        // Convertir coordenadas del mapa a Three.js.
         const yMundo = alto - 1 - y;
 
 
-        // Recorrer cada caracter.
+        // Recorrer caracteres
         for (
             let index = 0;
             index < fila.length;
@@ -775,7 +701,7 @@ function construirNivel() {
             const elemento = fila[index];
 
 
-            // Crear bloques solidos.
+            // Crear bloques 
             if (SOLIDOS.has(elemento)) {
 
                 crearBloque(
@@ -786,7 +712,7 @@ function construirNivel() {
             }
 
 
-            // Crear enemigos.
+            // Crear enemigos
             else if (elemento === "E") {
 
                 crearEnemigo(
@@ -796,7 +722,7 @@ function construirNivel() {
             }
 
 
-            // Posicion inicial de Junimo.
+            // Posicion inicial del jugador
             else if (elemento === "P") {
 
                 posicionInicial = {
@@ -806,7 +732,7 @@ function construirNivel() {
             }
 
 
-            // Punto de control.
+            // Punto de control
             else if (elemento === "K") {
 
                 const bandera =
@@ -832,7 +758,7 @@ function construirNivel() {
             }
 
 
-            // Meta final.
+            // Meta 
             else if (elemento === "F") {
 
                 const bandera =
@@ -861,11 +787,6 @@ function construirNivel() {
 
 /* ============================================================
    CREAR BLOQUES CON TEXTURAS
-
-   Esta funcion es una de las mas importantes.
-
-   Dependiendo del caracter del mapa se aplica
-   un material diferente.
    ============================================================ */
 
 function crearBloque(x, y, tipo) {
@@ -879,7 +800,7 @@ function crearBloque(x, y, tipo) {
 
     switch (tipo) {
 
-        // Suelo con pasto.
+        // Suelo con pasto
         case "#":
 
             materialBloque = MATERIALES.suelo;
@@ -887,7 +808,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Plataforma flotante.
+        // Plataformas
         case "=":
 
             materialBloque = MATERIALES.suelo;
@@ -895,7 +816,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Tierra.
+        // Tierra
         case "T":
 
             materialBloque =
@@ -904,7 +825,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Ladrillo rompible.
+        // Ladrillo
         case "B":
 
             materialBloque =
@@ -913,7 +834,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Caja sorpresa.
+        // sorpresa
         case "G":
 
             materialBloque =
@@ -922,7 +843,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Caja sorpresa utilizada.
+        // Caja sorpresa usada
         case "U":
 
             materialBloque =
@@ -931,7 +852,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Piedra.
+        // Piedra
         case "S":
 
             materialBloque =
@@ -940,7 +861,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Columna.
+        // Columna
         case "C":
 
             materialBloque =
@@ -949,7 +870,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Tronco.
+        // Tronco
         case "L":
 
             materialBloque =
@@ -958,7 +879,7 @@ function crearBloque(x, y, tipo) {
             break;
 
 
-        // Material de respaldo.
+        // Material de respaldo
         default:
 
             materialBloque =
@@ -969,7 +890,7 @@ function crearBloque(x, y, tipo) {
 
 
     /* --------------------------------------------------------
-       CREAR EL BLOQUE 3D
+       BLOQUE 3D
        -------------------------------------------------------- */
 
     const malla = new THREE.Mesh(
@@ -978,7 +899,7 @@ function crearBloque(x, y, tipo) {
     );
 
 
-    // Posicion del cubo.
+    // Posicion del cubo
     malla.position.set(
         x + 0.5,
         y + 0.5,
@@ -986,21 +907,14 @@ function crearBloque(x, y, tipo) {
     );
 
 
-    // Sombras.
+    // Sombras
     malla.castShadow = true;
 
     malla.receiveShadow = true;
 
 
-    // Añadir bloque al escenario.
+    // Añadir bloque al escenario
     grupoNivel.add(malla);
-
-
-    /* --------------------------------------------------------
-       GUARDAR EL BLOQUE
-
-       Esto permite detectar colisiones.
-       -------------------------------------------------------- */
 
     bloques.set(
         clave(x, y),
@@ -1012,14 +926,6 @@ function crearBloque(x, y, tipo) {
             rebote: 0
         }
     );
-
-
-    /* --------------------------------------------------------
-       TIERRA DEBAJO DEL SUELO
-
-       El suelo tiene pasto arriba y tierra debajo.
-       Esta tierra es solamente visual.
-       -------------------------------------------------------- */
 
     if (tipo === "#" && y === 0) {
 
@@ -1043,11 +949,8 @@ function crearBloque(x, y, tipo) {
     }
 }
 
-
 /* ============================================================
    CREAR ENEMIGOS
-
-   Se colocan en las posiciones E del mapa.
    ============================================================ */
 
 function crearEnemigo(x, y) {
@@ -1055,11 +958,11 @@ function crearEnemigo(x, y) {
     const malla = crearModeloEnemigo();
 
 
-    // Añadir enemigo al escenario.
+    // Añadir enemigo
     grupoNivel.add(malla);
 
 
-    // Guardar datos para su movimiento.
+    // datos movimiento
     enemigos.push({
 
         x: x + 0.5,
@@ -1082,21 +985,14 @@ function crearEnemigo(x, y) {
     });
 }
 
-
 /* ============================================================
-   RAMPAS DEL NIVEL
-
-   Se conserva la misma geometria del juego original.
-   ============================================================ */
-
-
-/* ============================================================
+   RAMPA
    CALCULAR ALTURA DE RAMPA
    ============================================================ */
 
 function alturaRampa(r, x) {
 
-    // Posicion relativa entre 0 y 1.
+    // Posicion relativa entre 0 y 1
     const t = Math.min(
         1,
         Math.max(
@@ -1106,17 +1002,16 @@ function alturaRampa(r, x) {
     );
 
 
-    // Funcion smoothstep.
+    // Funcion smoothstep. (crea una transicion suave entre los valores 0 y 1)
     const s = t * t * (3 - 2 * t);
 
 
-    // Altura de la superficie.
+    // Altura superf
     return (
         r.hIzq +
         (r.hDer - r.hIzq) * s
     );
 }
-
 
 /* ============================================================
    CALCULAR PENDIENTE DE LA RAMPA
@@ -1140,11 +1035,6 @@ function pendienteRampa(r, x) {
     );
 }
 
-
-/* ============================================================
-   DETECTAR RAMPA EN UNA POSICION X
-   ============================================================ */
-
 function rampaEn(x) {
 
     return RAMPAS.find(
@@ -1153,19 +1043,13 @@ function rampaEn(x) {
 }
 
 
-/* ============================================================
-   CREAR RAMPA 3D CON TEXTURAS
-   ============================================================ */
-
 function crearRampa(r) {
 
-    // Cantidad de divisiones de la curva.
+    // Cantidad de divisiones de la curva
     const N = 48;
 
     const puntos = [];
-
-
-    /* --------------------------------------------------------
+/*
        CALCULAR PUNTOS DE LA CURVA
        -------------------------------------------------------- */
 
@@ -1181,11 +1065,6 @@ function crearRampa(r) {
             alturaRampa(r, x)
         ]);
     }
-
-
-    /* --------------------------------------------------------
-       CREAR CUERPO DE TIERRA
-       -------------------------------------------------------- */
 
     const formaTierra = new THREE.Shape();
 
@@ -1211,7 +1090,7 @@ function crearRampa(r) {
     formaTierra.closePath();
 
 
-    // Convertir forma en volumen 3D.
+    // Convertir volumen 3D
     const geoTierra =
         new THREE.ExtrudeGeometry(
             formaTierra,
@@ -1229,7 +1108,7 @@ function crearRampa(r) {
     );
 
 
-    // Tierra con textura.
+    // Tierra textura
     const tierra = new THREE.Mesh(
 
         geoTierra,
@@ -1250,7 +1129,7 @@ function crearRampa(r) {
 
 
     /* --------------------------------------------------------
-       CREAR FRANJA DE PASTO SOBRE LA RAMPA
+       PASTO SOBRE LA RAMPA
        -------------------------------------------------------- */
 
     const formaPasto = new THREE.Shape();
@@ -1268,7 +1147,7 @@ function crearRampa(r) {
     });
 
 
-    // Parte inferior de la franja.
+    // Parte inferior de la franja
     for (let i = N; i >= 0; i--) {
 
         formaPasto.lineTo(
@@ -1281,7 +1160,7 @@ function crearRampa(r) {
     formaPasto.closePath();
 
 
-    // Convertir franja en geometria 3D.
+    // Convertir franja en geo 3D
     const geoPasto =
         new THREE.ExtrudeGeometry(
             formaPasto,
@@ -1298,8 +1177,6 @@ function crearRampa(r) {
         -0.51
     );
 
-
-    // Material frontal de pasto y lateral de suelo.
     const pasto = new THREE.Mesh(
 
         geoPasto,
@@ -1316,22 +1193,18 @@ function crearRampa(r) {
 
     grupoNivel.add(pasto);
 }
-
-
 /* ============================================================
    ESTANQUES DEL NIVEL
-
-   Se conservan los huecos y sus posiciones.
    ============================================================ */
 
 function crearEstanque(e) {
 
-    // Ancho del estanque.
+    // Ancho 
     const ancho =
         e.x1 - e.x0 - 0.02;
 
 
-    // Geometria del agua.
+    // Geometria agua
     const geometriaAgua =
         new THREE.BoxGeometry(
             ancho,
@@ -1340,7 +1213,7 @@ function crearEstanque(e) {
         );
 
 
-    // Agua azul.
+    // Agua color
     const agua = new THREE.Mesh(
 
         geometriaAgua,
@@ -1349,7 +1222,7 @@ function crearEstanque(e) {
     );
 
 
-    // Colocar agua en el hueco.
+    // Colocar agua en el hueco
     agua.position.set(
 
         (e.x0 + e.x1) / 2,
@@ -1360,24 +1233,9 @@ function crearEstanque(e) {
     );
 
 
-    // Añadir al escenario.
+    // Añadir al escenario
     grupoNivel.add(agua);
 }
-
-
-/* =============== FIN PARTE 2 =============== */
-/* ============================================================
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   PARTE 3 DE 5
-
-   7. CONTROLES DEL TECLADO
-   8. FISICA Y COLISIONES
-   9. LADRILLOS Y CAJAS SORPRESA
-
-   Se mantiene el sistema de movimiento original.
-   ============================================================ */
-
-
 /* ============================================================
    7. CONTROLES DEL TECLADO
 
@@ -1390,7 +1248,7 @@ function crearEstanque(e) {
    R                     = Reiniciar
    ============================================================ */
 
-// Almacena las teclas presionadas.
+// Almacena las teclas
 const teclas = {};
 
 
@@ -1400,12 +1258,12 @@ const teclas = {};
 
 window.addEventListener('keydown', (e) => {
 
-    // Guardar la tecla presionada.
+    // Guardar la tecla presionada
     teclas[e.code] = true;
 
 
     // Evitar que las flechas y el espacio
-    // desplacen la pagina del navegador.
+    // desplacen la pagina del navegador
     if ([
         'Space',
         'ArrowUp',
@@ -1416,13 +1274,9 @@ window.addEventListener('keydown', (e) => {
 
         e.preventDefault();
     }
-
-
     /* --------------------------------------------------------
-       SOLICITUD DE SALTO
-
-       El buffer permite recordar un salto
-       durante una fraccion de segundo.
+       buffer que permite recordar un salto
+       durante una fraccion de segundo
        -------------------------------------------------------- */
 
     if (
@@ -1455,7 +1309,6 @@ window.addEventListener('keydown', (e) => {
 
 });
 
-
 /* ============================================================
    DETECTAR CUANDO SE SUELTA UNA TECLA
    ============================================================ */
@@ -1466,12 +1319,7 @@ window.addEventListener('keyup', (e) => {
 
 });
 
-
-/* ============================================================
-   FUNCIONES PARA CONSULTAR LAS TECLAS
-   ============================================================ */
-
-// Teclas que permiten saltar.
+// Teclas que permiten saltar
 const esTeclaSalto = (code) => {
 
     return (
@@ -1482,7 +1330,7 @@ const esTeclaSalto = (code) => {
 };
 
 
-// Movimiento hacia la izquierda.
+// Movimiento hacia la izquierda
 const teclaIzquierda = () => {
 
     return (
@@ -1492,7 +1340,7 @@ const teclaIzquierda = () => {
 };
 
 
-// Movimiento hacia la derecha.
+// Movimiento hacia la derecha
 const teclaDerecha = () => {
 
     return (
@@ -1502,7 +1350,7 @@ const teclaDerecha = () => {
 };
 
 
-// Comprobar si se mantiene el salto.
+// Comprobar si se mantiene salto
 const teclaSaltoPresionada = () => {
 
     return (
@@ -1513,7 +1361,7 @@ const teclaSaltoPresionada = () => {
 };
 
 
-// Tecla para correr.
+// Tecla para correr
 const teclaCorrer = () => {
 
     return (
@@ -1522,75 +1370,48 @@ const teclaCorrer = () => {
     );
 };
 
-
 /* ============================================================
    8. FISICA Y COLISIONES
-
-   Cada entidad tiene:
-
-   x, y       = Posicion
-   vx, vy     = Velocidad
-   ancho      = Ancho del objeto
-   alto       = Altura del objeto
-
-   Las colisiones se calculan primero en X
-   y despues en Y.
-   ============================================================ */
-
-
-/* ============================================================
-   BUSCAR UN BLOQUE EN EL MAPA
+   Las colisiones las calcula primero en X
+   y despues en Y
    ============================================================ */
 
 function obtenerBloque(tx, ty) {
 
-    // Buscar el bloque utilizando su posicion.
+    // Buscar el bloque utilizando su posicion
     return bloques.get(
         clave(tx, ty)
     ) || null;
 }
-
-
-/* ============================================================
-   DETECTAR BLOQUES QUE TOCA UN OBJETO
-
-   Utilizamos una caja rectangular para comprobar
-   si existe contacto con los bloques solidos.
-   ============================================================ */
 
 function bloquesQueToca(ent, holgura = 0.001) {
 
     const resultado = [];
 
 
-    // Limite izquierdo.
+    // Lim izquierdo
     const izquierda = Math.floor(
         ent.x - ent.ancho / 2
     );
 
 
-    // Limite derecho.
+    // Lim derecho
     const derecha = Math.floor(
         ent.x + ent.ancho / 2 - 0.001
     );
 
 
-    // Limite inferior.
+    // Lim inferior
     const abajo = Math.floor(
         ent.y + holgura
     );
 
 
-    // Limite superior.
+    // Lim superior
     const arriba = Math.floor(
         ent.y + ent.alto - 0.001
     );
-
-
-    /* --------------------------------------------------------
-       REVISAR BLOQUES DENTRO DEL AREA
-       -------------------------------------------------------- */
-
+//revisar bloques en el area o dentro del area 
     for (
         let tx = izquierda;
         tx <= derecha;
@@ -1607,7 +1428,7 @@ function bloquesQueToca(ent, holgura = 0.001) {
                 obtenerBloque(tx, ty);
 
 
-            // Si hay un bloque, guardarlo.
+            // guarda si hay un bloque
             if (bloque) {
 
                 resultado.push(bloque);
@@ -1618,17 +1439,7 @@ function bloquesQueToca(ent, holgura = 0.001) {
 
     return resultado;
 }
-
-
-/* ============================================================
-   MOVIMIENTO DE ENTIDADES
-
-   Esta funcion sirve tanto para Junimo
-   como para los enemigos.
-
-   alGolpearTecho es una funcion opcional.
-   ============================================================ */
-
+//entidades
 function moverEntidad(
     ent,
     dt,
@@ -1638,15 +1449,13 @@ function moverEntidad(
     ent.chocoPared = false;
 
 
-    /* --------------------------------------------------------
-       MOVIMIENTO HORIZONTAL - EJE X
-       -------------------------------------------------------- */
+//Movimiento horizontal
 
-    // Actualizar posicion horizontal.
+    // Actualizar posicion horizontal
     ent.x += ent.vx * dt;
 
 
-    // Detectar bloques cercanos.
+    // Detectar bloques cercanos
     let choques = bloquesQueToca(
 
         ent,
@@ -1657,10 +1466,10 @@ function moverEntidad(
     );
 
 
-    // Comprobar choque horizontal.
+    // Comprobar choque horizontal
     if (choques.length > 0) {
 
-        // Movimiento hacia la derecha.
+        // Movimiento hacia la derecha
         if (ent.vx > 0) {
 
             ent.x = Math.min(
@@ -1669,7 +1478,7 @@ function moverEntidad(
         }
 
 
-        // Movimiento hacia la izquierda.
+        // Movimiento hacia la izquierda
         else if (ent.vx < 0) {
 
             ent.x = Math.max(
@@ -1678,36 +1487,27 @@ function moverEntidad(
         }
 
 
-        // Detener movimiento horizontal.
+        // Detener movimiento horizontal
         ent.vx = 0;
 
         ent.chocoPared = true;
     }
-
-
-    /* --------------------------------------------------------
-       MOVIMIENTO VERTICAL - EJE Y
-       -------------------------------------------------------- */
-
-    // Aplicar movimiento vertical.
+//Mov vertical
+    // Aplicar movimiento vertical
     ent.y += ent.vy * dt;
 
 
-    // Se comprueba nuevamente si toca el suelo.
+    // Se comprueba nuevamente si toca el suelo
     ent.enSuelo = false;
 
 
-    // Detectar bloques.
+    // Detectar bloques
     choques = bloquesQueToca(ent);
 
 
     if (choques.length > 0) {
 
-        /* ----------------------------------------------------
-           COLISION AL CAER
-
-           La entidad aterriza encima del bloque.
-           ---------------------------------------------------- */
+// Colision cuando cae
 
         if (ent.vy < 0) {
 
@@ -1719,12 +1519,7 @@ function moverEntidad(
             ent.enSuelo = true;
         }
 
-
-        /* ----------------------------------------------------
-           COLISION AL SUBIR
-
-           Junimo golpea el bloque desde abajo.
-           ---------------------------------------------------- */
+// colision cuando sube 
 
         else if (ent.vy > 0) {
 
@@ -1733,7 +1528,7 @@ function moverEntidad(
             ) - ent.alto - 0.001;
 
 
-            // Activar la funcion de golpe.
+            // Activar la funcion de golpe
             if (alGolpearTecho) {
 
                 alGolpearTecho(choques);
@@ -1741,47 +1536,34 @@ function moverEntidad(
         }
 
 
-        // Detener movimiento vertical.
+        // Detener movimiento vertical
         ent.vy = 0;
     }
 }
 
 
-/* ============================================================
-   COLISION CON RAMPAS
 
-   La rampa no esta formada por bloques cuadrados.
-   Su altura se calcula con una curva.
-   ============================================================ */
+  // COLISION CON RAMPAS
 
 function resolverRampa(ent, dt) {
 
     ent.enRampa = false;
 
     ent.pendiente = 0;
-
-
-    // Buscar una rampa en la posicion del jugador.
     const r = rampaEn(ent.x);
 
-
-    // Si no existe una rampa, terminar.
     if (!r) {
 
         return;
     }
 
 
-    // Calcular la pendiente.
+    // Calcular la pendiente
     const pendiente =
         pendienteRampa(r, ent.x);
 
 
-    /* --------------------------------------------------------
-       CALCULAR ALTURA DE APOYO
-
-       La esfera debe quedar sobre la rampa.
-       -------------------------------------------------------- */
+//calculo de altura de apoyo
 
     const yApoyo =
 
@@ -1795,13 +1577,7 @@ function resolverRampa(ent, dt) {
             ) - 1
         );
 
-
-    /* --------------------------------------------------------
-       MARGEN DE CONTACTO
-
-       Evita que Junimo se separe de la rampa
-       cuando desciende rapidamente.
-       -------------------------------------------------------- */
+    // margen de contacto 
 
     const margen = ent.enRampaAntes
 
@@ -1810,42 +1586,30 @@ function resolverRampa(ent, dt) {
           dt * 1.5
 
         : 0.02;
-
-
-    /* --------------------------------------------------------
-       COMPROBAR CONTACTO CON LA RAMPA
-       -------------------------------------------------------- */
-
+//contacto con la rampa
     if (
         ent.vy <= 0 &&
         ent.y <= yApoyo + margen
     ) {
 
-        // Colocar sobre la superficie.
+        // Colocar sobre la superficie
         ent.y = yApoyo;
 
 
-        // Detener caida.
+        // Detener caida
         ent.vy = 0;
 
 
-        // Marcar contacto con el suelo.
+        // Marcar contacto con el suelo
         ent.enSuelo = true;
 
         ent.enRampa = true;
 
 
-        // Guardar pendiente.
+        // Guardar pendiente
         ent.pendiente = pendiente;
     }
 }
-
-
-/* ============================================================
-   DETECTAR SUPERPOSICION DE DOS ENTIDADES
-
-   Utiliza colisiones rectangulares AABB.
-   ============================================================ */
 
 function seSuperponen(a, b) {
 
@@ -1861,25 +1625,19 @@ function seSuperponen(a, b) {
     );
 }
 
-
 /* ============================================================
    9. LADRILLOS Y CAJAS SORPRESA
 
    B = Ladrillo que se destruye
    G = Caja sorpresa con gema
    U = Caja sorpresa utilizada
-
-   Se conservan las posiciones de los bloques del mapa.
-   ============================================================ */
-
-
-/* ============================================================
+   ============================================================ 
    GOLPEAR UN BLOQUE DESDE ABAJO
    ============================================================ */
 
 function golpearBloque(listaBloques) {
 
-    // Evitar operaciones sobre una lista vacia.
+    // Evitar operaciones sobre una lista vacia
     if (
         !listaBloques ||
         listaBloques.length === 0
@@ -1887,11 +1645,6 @@ function golpearBloque(listaBloques) {
 
         return;
     }
-
-
-    /* --------------------------------------------------------
-       ELEGIR EL BLOQUE MAS CERCANO AL JUGADOR
-       -------------------------------------------------------- */
 
     const bloque = listaBloques.reduce(
 
@@ -1914,7 +1667,6 @@ function golpearBloque(listaBloques) {
         }
     );
 
-
     /* --------------------------------------------------------
        CASO 1: LADRILLO NORMAL
 
@@ -1931,65 +1683,56 @@ function golpearBloque(listaBloques) {
        CASO 2: CAJA SORPRESA
 
        La caja entrega una gema azul.
-       Despues cambia a la textura usado.jpg.
        -------------------------------------------------------- */
 
     else if (bloque.tipo === 'G') {
 
-        // Cambiar el tipo de bloque.
+        // Cambiar el tipo de bloque
         bloque.tipo = 'U';
 
 
-        // Cambiar la textura.
+        // Cambiar la textura
         bloque.malla.material =
             MATERIALES.usado;
 
 
-        // Mantener la caja en el mapa de colisiones.
+        // Mantener la caja en el mapa de colisiones
         bloques.set(
             clave(bloque.x, bloque.y),
             bloque
         );
 
 
-        // Animacion de golpe.
+        // Animacion de golpe
         bloque.rebote = 0.18;
 
 
-        // Crear gema azul.
+        // Crear gema azul
         lanzarGemaSorpresa(
             bloque.x,
             bloque.y
         );
 
 
-        // Recompensa por golpear la caja.
+        // Recompensa por golpear la caja
         puntos += 100;
 
 
-        // Mostrar aviso.
+        // Mostrar aviso
         mostrarAviso(
             '¡GEMA SORPRESA! +100'
         );
     }
-
-
     /* --------------------------------------------------------
-       CASO 3: CAJA YA UTILIZADA
-
-       No se entregan nuevos premios.
+       CASO 3: CAJA YA USADA
        -------------------------------------------------------- */
 
     else if (bloque.tipo === 'U') {
 
         bloque.rebote = 0.08;
     }
-
-
     /* --------------------------------------------------------
-       CASO 4: OTROS BLOQUES
-
-       Solo producen un pequeño rebote visual.
+       CASO 4: OTROS BLOQUES REBOTE VISUAL )
        -------------------------------------------------------- */
 
     else {
@@ -1997,12 +1740,11 @@ function golpearBloque(listaBloques) {
         bloque.rebote = 0.1;
     }
 
-
     /* --------------------------------------------------------
        ENEMIGOS ENCIMA DEL BLOQUE
 
        Si Junimo golpea una caja desde abajo,
-       un enemigo situado encima recibe el golpe.
+       un enemigo situado encima recibe el golpe  y muere xd
        -------------------------------------------------------- */
 
     enemigos.forEach(en => {
@@ -2024,34 +1766,26 @@ function golpearBloque(listaBloques) {
         }
     });
 }
-
-
 /* ============================================================
    DESTRUIR LADRILLOS
-
-   Se elimina el bloque de la escena
-   y del mapa de colisiones.
    ============================================================ */
 
 function destruirBloque(bloque) {
 
-    // Eliminar bloque visualmente.
+    // Eliminar bloque visualmente
     grupoNivel.remove(
         bloque.malla
     );
 
 
-    // Eliminar bloque del mapa.
+    // Eliminar bloque del mapa
     bloques.delete(
         clave(bloque.x, bloque.y)
     );
 
 
     /* --------------------------------------------------------
-       CREAR FRAGMENTOS DE LADRILLO
-
-       Los fragmentos utilizaran el material
-       de ladrillo que agregamos en la Parte 1.
+       FRAGMENTO DE LADRILLO
        -------------------------------------------------------- */
 
     crearParticulas(
@@ -2066,7 +1800,7 @@ function destruirBloque(bloque) {
     );
 
 
-    // Sumar puntos.
+    // Sumar puntos
     puntos += 50;
 }
 

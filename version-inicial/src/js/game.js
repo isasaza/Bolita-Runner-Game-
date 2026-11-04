@@ -1806,15 +1806,7 @@ function destruirBloque(bloque) {
 
 
 /* ============================================================
-   CREAR GEMA SORPRESA
-
-   La gema sale por encima del bloque.
-
-   Utilizamos:
-   GEO_GEMA_SORPRESA
-   MAT_GEMA_SORPRESA
-
-   Definidos en la Parte 1.
+   GEMA SORPRESA
    ============================================================ */
 
 function lanzarGemaSorpresa(x, y) {
@@ -1831,7 +1823,7 @@ function lanzarGemaSorpresa(x, y) {
     );
 
 
-    // Posicion inicial de la gema.
+    // Posicion inicial 
     gema.position.set(
 
         x + 0.5,
@@ -1842,25 +1834,16 @@ function lanzarGemaSorpresa(x, y) {
     );
 
 
-    // Permitir que reciba iluminacion.
+    // Permitir iluminación
     gema.castShadow = true;
 
 
-    // Agregar gema al nivel.
+    // Agregar gema al nivel
     grupoNivel.add(gema);
 
 
     /* --------------------------------------------------------
        ANIMACION DE LA GEMA
-
-       La gema:
-       - Sube
-       - Gira
-       - Desciende
-       - Desaparece despues de un momento
-
-       La funcion actualizarParticulas()
-       de la Parte 5 procesara esta animacion.
        -------------------------------------------------------- */
 
     particulas.push({
@@ -1880,33 +1863,8 @@ function lanzarGemaSorpresa(x, y) {
         gravedad: -16
     });
 }
-
-
-/* =============== FIN PARTE 3 =============== */
-/* ============================================================
-   JUNIMO RUNNER - VERSION INICIAL CON TEXTURAS
-   PARTE 4 DE 5
-
-   10. JUGADOR JUNIMO
-
-   Incluye:
-   - Movimiento horizontal
-   - Aceleracion y friccion
-   - Salto
-   - Gravedad
-   - Colisiones
-   - Movimiento sobre rampas
-   - Animacion de rodamiento
-   - Sistema de vidas
-   - Punto de control
-   - Meta final
-   ============================================================ */
-
-
 /* ============================================================
    10. JUGADOR
-
-   Aqui guardamos las propiedades fisicas de Junimo.
 
    x, y: posicion
    vx, vy: velocidad
@@ -1916,54 +1874,52 @@ function lanzarGemaSorpresa(x, y) {
 
 const jugador = {
 
-    // Posicion inicial.
+    // Posicion inicial
     x: 0,
     y: 0,
 
-    // Velocidades.
+    // Velocidades
     vx: 0,
     vy: 0,
 
-    // Dimensiones para las colisiones.
+    // Dimensiones para las colisiones
     ancho: CONFIG.RADIO_BOLA * 2,
     alto: CONFIG.RADIO_BOLA * 2,
 
-    // Estado del movimiento.
+    // Estado del movimiento
     enSuelo: false,
 
-    // Direccion del personaje.
+    // Direccion del personaje
     mirando: 1,
 
-    // Tiempo permitido para saltar al salir de un borde.
+    // Tiempo permitido para saltar al salir de un borde
     tiempoCoyote: 0,
 
-    // Guarda brevemente una solicitud de salto.
+    // Guarda solicitud de salto
     bufferSalto: 0,
 
-    // Indica si esta saltando.
+    // Indica si esta saltando
     saltando: false,
 
-    // Proteccion temporal despues de recibir daño.
+    // Proteccion temporal despues de recibir daño
     invulnerable: 0,
 
-    // Variables de animacion.
+    // animacion
     tiempoAnimacion: 0,
     aplastar: 0,
 
-    // Propiedades de las rampas.
+    // Propiedad de la rampa
     enRampa: false,
     enRampaAntes: false,
     pendiente: 0,
 
-    // Indica si esta rodando.
+    // Indica si esta rodando
     rodando: false,
-
-    // Modelo 3D creado en la Parte 2.
     malla: crearModeloJugador()
 };
 
 
-// Agregar el personaje a la escena.
+// Agregar personaje a la escena
 scene.add(jugador.malla);
 
 
@@ -1971,14 +1927,14 @@ scene.add(jugador.malla);
    REAPARECER JUGADOR
 
    Si Junimo no ha activado una bandera de control,
-   vuelve a la posicion inicial.
+   vuelve a la posicion inicial
 
-   Si activo un checkpoint, reaparece alli.
+   Si activo un checkpoint, reaparece alli en el checkpoint
    ============================================================ */
 
 function reaparecerJugador() {
 
-    // Elegir la posicion de reaparicion.
+    // Elegir la posicion de reaparicion
     const inicio = (
         puntoControl && puntoControl.activo
     )
@@ -1986,21 +1942,21 @@ function reaparecerJugador() {
         : posicionInicial;
 
 
-    // Restaurar posicion.
+    // Restaurar posicion
     jugador.x = inicio.x;
     jugador.y = inicio.y;
 
 
-    // Detener velocidades.
+    // Detener velocidades
     jugador.vx = 0;
     jugador.vy = 0;
 
 
-    // Restaurar direccion.
+    // Restaurar direccion
     jugador.mirando = 1;
 
 
-    // Reiniciar salto.
+    // Reiniciar salto
     jugador.enSuelo = false;
     jugador.saltando = false;
 
@@ -2008,7 +1964,7 @@ function reaparecerJugador() {
     jugador.bufferSalto = 0;
 
 
-    // Reiniciar movimiento sobre rampas.
+    // Reiniciar movimiento sobre rampas
     jugador.enRampa = false;
     jugador.enRampaAntes = false;
 
@@ -2016,23 +1972,23 @@ function reaparecerJugador() {
     jugador.rodando = false;
 
 
-    // Restaurar animaciones.
+    // Restaurar animaciones
     jugador.tiempoAnimacion = 0;
     jugador.aplastar = 0;
 
 
-    // Proteccion temporal.
+    // Proteccion temporal
     jugador.invulnerable =
         CONFIG.INVULNERABLE;
 
 
-    // Restaurar giro del personaje.
+    // Restaurar giro del personaje
     jugador.malla.rotation.set(0, 0, 0);
 
     jugador.malla.userData.cuerpoRot.rotation.z = 0;
 
 
-    // Actualizar posicion visual.
+    // Actualizar posicion visual
     jugador.malla.position.set(
         jugador.x,
         jugador.y,
@@ -2046,13 +2002,9 @@ function reaparecerJugador() {
 /* ============================================================
    ACTUALIZAR JUGADOR
 
-   Esta funcion se ejecutara en cada fotograma.
+   Esta funcion se ejecutara en cada fotograma
 
    dt representa el tiempo entre fotogramas.
-
-   Ejemplo:
-   Si el juego funciona a 60 FPS,
-   dt es aproximadamente 0.0167 segundos.
    ============================================================ */
 
 function actualizarJugador(dt) {
@@ -2060,29 +2012,29 @@ function actualizarJugador(dt) {
     const j = jugador;
 
 
-    // Guardar si estaba en una rampa.
+    // Guardar si estaba en una rampa
     j.enRampaAntes = j.enRampa;
 
 
     /* ========================================================
        PASO 1. MOVIMIENTO HORIZONTAL
 
-       A o flecha izquierda = -1
-       D o flecha derecha = +1
+       flecha izquierda = -1
+       flecha derecha = +1
        Sin pulsar teclas = 0
        ======================================================== */
 
     let direccion = 0;
 
 
-    // Movimiento hacia la izquierda.
+    // Movimiento hacia la izquierda
     if (teclaIzquierda()) {
 
         direccion -= 1;
     }
 
 
-    // Movimiento hacia la derecha.
+    // Movimiento hacia la derecha
     if (teclaDerecha()) {
 
         direccion += 1;
@@ -2092,8 +2044,8 @@ function actualizarJugador(dt) {
     /* ========================================================
        PASO 2. VELOCIDAD MAXIMA
 
-       Caminar: 6 unidades/segundo
-       Correr: 9 unidades/segundo
+       Caminar 6 unidades/segundo
+       Correr 9 unidades/segundo
        ======================================================== */
 
     const velocidadMaxima = teclaCorrer()
@@ -2101,7 +2053,7 @@ function actualizarJugador(dt) {
         : CONFIG.VEL_CAMINAR;
 
 
-    // Si esta rodando puede alcanzar mayor velocidad.
+    // Si esta rodando puede alcanzar mayor velocidad
     const limite = j.rodando
         ? CONFIG.VEL_RODAR
         : velocidadMaxima;
@@ -2109,14 +2061,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 3. ACELERACION EN LAS RAMPAS
-
-       La pendiente influye sobre la velocidad.
-
-       Pendiente positiva:
-       el personaje tiende a bajar hacia la izquierda.
-
-       Pendiente negativa:
-       el personaje tiende a bajar hacia la derecha.
        ======================================================== */
 
     if (j.enRampaAntes) {
@@ -2140,7 +2084,7 @@ function actualizarJugador(dt) {
             dt;
 
 
-        // Guardar hacia donde mira.
+        // Guardar hacia donde mira
         j.mirando = direccion;
     }
 
@@ -2149,7 +2093,7 @@ function actualizarJugador(dt) {
        PASO 5. FRICCION
 
        Si no se presiona ninguna tecla y no esta
-       sobre una rampa, Junimo reduce su velocidad.
+       sobre una rampa el jugador reduce su velocidad
        ======================================================== */
 
     else if (!j.enRampaAntes) {
@@ -2194,7 +2138,7 @@ function actualizarJugador(dt) {
        PASO 7. TIEMPO COYOTE
 
        Permite saltar durante un instante despues
-       de abandonar el borde de una plataforma.
+       de abandonar el borde de una plataforma
        ======================================================== */
 
     if (j.enSuelo) {
@@ -2211,7 +2155,7 @@ function actualizarJugador(dt) {
     /* ========================================================
        PASO 8. BUFFER DE SALTO
 
-       Guarda por un instante la pulsacion del salto.
+       Guarda la pulsacion del salto
        ======================================================== */
 
     j.bufferSalto -= dt;
@@ -2219,10 +2163,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 9. EJECUTAR EL SALTO
-
-       El salto ocurre cuando:
-       - Se solicito saltar.
-       - Junimo esta en el suelo o en tiempo coyote.
        ======================================================== */
 
     if (
@@ -2230,14 +2170,14 @@ function actualizarJugador(dt) {
         j.tiempoCoyote > 0
     ) {
 
-        // Aplicar velocidad vertical hacia arriba.
+        // Aplicar velocidad vertical hacia arriba
         j.vy = CONFIG.FUERZA_SALTO;
 
 
-        // Consumir solicitud de salto.
+        // Consumir solicitud de salto
         j.bufferSalto = 0;
 
-        // Evitar repetir el salto en el aire.
+        // Evitar repetir el salto en el aire
         j.tiempoCoyote = 0;
 
 
@@ -2249,9 +2189,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 10. CONTROLAR ALTURA DEL SALTO
-
-       Si se suelta la tecla antes de tiempo,
-       Junimo realiza un salto mas corto.
        ======================================================== */
 
     if (
@@ -2266,7 +2203,7 @@ function actualizarJugador(dt) {
     }
 
 
-    // Cuando comienza a caer termina el impulso de salto.
+    // Cuando comienza a caer termina el impulso de salto
     if (j.vy <= 0) {
 
         j.saltando = false;
@@ -2275,8 +2212,7 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 11. APLICAR GRAVEDAD
-
-       La gravedad es mayor durante la caida.
+gravedad mayor cuando cae 
        ======================================================== */
 
     const gravedad = j.vy < 0
@@ -2294,9 +2230,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 12. LIMITAR VELOCIDAD DE CAIDA
-
-       Evita que Junimo alcance una velocidad
-       excesivamente alta al caer.
        ======================================================== */
 
     j.vy = Math.max(
@@ -2309,8 +2242,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 13. DETECTAR COLISIONES
-
-       Guardamos el estado antes de mover a Junimo.
        ======================================================== */
 
     const estabaEnSuelo = j.enSuelo;
@@ -2320,12 +2251,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 14. MOVER AL JUGADOR
-
-       moverEntidad se creo en la Parte 3.
-
-       golpearBloque permite activar:
-       - Ladrillos
-       - Cajas sorpresa
        ======================================================== */
 
     moverEntidad(
@@ -2339,7 +2264,7 @@ function actualizarJugador(dt) {
 
 
     /* ========================================================
-       PASO 15. LIMITAR BORDE IZQUIERDO DEL MAPA
+       PASO 15. LIMITAR BORDE IZQUIERD
        ======================================================== */
 
     if (j.x < j.ancho / 2) {
@@ -2351,9 +2276,7 @@ function actualizarJugador(dt) {
 
 
     /* ========================================================
-       PASO 16. RESOLVER CONTACTO CON RAMPAS
-
-       Esta funcion fue creada en la Parte 3.
+       PASO 16. CONTACTO CON RAMPAS
        ======================================================== */
 
     resolverRampa(j, dt);
@@ -2382,8 +2305,7 @@ function actualizarJugador(dt) {
     /* ========================================================
        PASO 18. RODAR SOBRE LAS RAMPAS
 
-       Si Junimo se desplaza cuesta abajo,
-       activa el movimiento de rodamiento.
+       Si el jugador se desplaza por la rampa baja rodando
        ======================================================== */
 
     if (
@@ -2396,7 +2318,7 @@ function actualizarJugador(dt) {
     }
 
 
-    // Dejar de rodar cuando pierde velocidad.
+    // Dejar de rodar cuando pierde velocidad
     else if (
         j.enSuelo &&
         Math.abs(j.vx) < CONFIG.VEL_CAMINAR
@@ -2408,9 +2330,6 @@ function actualizarJugador(dt) {
 
     /* ========================================================
        PASO 19. DETECTAR CAIDA AL VACIO
-
-       Si Junimo cae por debajo del limite,
-       pierde una vida.
        ======================================================== */
 
     if (j.y < CONFIG.LIMITE_CAIDA) {
@@ -2424,10 +2343,9 @@ function actualizarJugador(dt) {
     /* ========================================================
        PASO 20. ACTIVAR PUNTO DE CONTROL
 
-       Al alcanzar la bandera amarilla:
-       - Se activa el checkpoint.
-       - La bandera cambia a verde.
-       - Se guarda la posicion para reaparecer.
+       Al alcanzar la bandera amarilla, se activa el checkpoint.
+       Bandera cambia a verde.
+       Guarda la posicion para reaparecer.
        ======================================================== */
 
     if (
@@ -2439,12 +2357,12 @@ function actualizarJugador(dt) {
         puntoControl.activo = true;
 
 
-        // Cambiar bandera a verde.
+        // Cambiar bandera a verde
         puntoControl.bandera.userData.tela
             .material.color.set(0x28d950);
 
 
-        // Mostrar mensaje.
+        // mensaje
         mostrarAviso(
             '¡PUNTO DE CONTROL!'
         );

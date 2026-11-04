@@ -1043,7 +1043,6 @@ function crearBandera(color) {
 
     return grupo;
 }
-
 /* =====================================================================
    6. CONSTRUCCIÓN DEL NIVEL
 
@@ -1790,7 +1789,6 @@ const teclaSaltoPresionada = () =>
 const teclaCorrer = () =>
     teclas['ShiftLeft'] ||
     teclas['ShiftRight'];
-
     /* =====================================================================
    8. FÍSICA Y COLISIONES
 
@@ -2633,7 +2631,6 @@ function actualizarMuerte(dt) {
         }
     }
 }
-
 /* =====================================================================
    11. ENEMIGOS
 

@@ -56,7 +56,7 @@ const CONFIG = {
 
     // Movimiento de Junimo sobre las rampas.
     G_RAMPA: 30,
-    VEL_RODAR: 10,
+    VEL_RODAR: 13,
     FRICCION_RODAR: 5
 };
 
@@ -222,7 +222,6 @@ luzSol.shadow.camera.far = 60;
 
 scene.add(luzSol);
 scene.add(luzSol.target);
-
 /* =====================================================================
    4. MATERIALES Y GEOMETRÍAS
 
@@ -321,9 +320,16 @@ aplicarTextura(
 );
 
 
-/* =========================================================
-   FONDO AJUSTADO A LA PANTALLA
-   ========================================================= */
+/* =====================================================================
+   FONDO DEL JUEGO
+
+   Usamos tres capas:
+   1. Cielo
+   2. Montañas
+   3. Nubes
+
+   Las capas son decorativas y no producen colisiones.
+   ===================================================================== */
 
 const fondos = [];
 
@@ -336,45 +342,41 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 
             textura.colorSpace = THREE.SRGBColorSpace;
 
-            const materialFondo =
+            const malla = new THREE.Mesh(
+
+                new THREE.PlaneGeometry(
+                    ancho,
+                    alto
+                ),
+
                 new THREE.MeshBasicMaterial({
                     map: textura,
                     transparent: true,
                     opacity: opacidad,
                     depthWrite: false,
-                    depthTest: false,
                     side: THREE.DoubleSide
-                });
-
-            const malla = new THREE.Mesh(
-                new THREE.PlaneGeometry(1, 1),
-                materialFondo
+                })
             );
 
-            // El fondo queda fijo respecto a la cámara.
-            camera.add(malla);
+            malla.position.set(
+                0,
+                alto / 2 - 2,
+                z
+            );
 
-            // Distancia desde la cámara.
-            malla.position.set(0, 0, -20);
-
-            // Evitar que el fondo desaparezca
-            // por los límites de visibilidad.
-            malla.frustumCulled = false;
+            scene.add(malla);
 
             fondos.push({
                 malla,
-                z,
-                nombre
+                z
             });
-
-            actualizarFondo();
         },
 
         undefined,
 
         () => {
             console.warn(
-                'No se pudo cargar:',
+                'Fondo opcional no encontrado:',
                 nombre
             );
         }
@@ -382,45 +384,30 @@ function agregarFondo(nombre, z, alto, ancho, opacidad) {
 }
 
 
-// Asegurar que la cámara forme parte de la escena.
-scene.add(camera);
+// Cargar las tres capas.
+agregarFondo(
+    'cielo.png',
+    -55,
+    32,
+    100,
+    1
+);
 
+agregarFondo(
+    'montanas.png',
+    -45,
+    24,
+    90,
+    0.95
+);
 
-/* =========================================================
-   AJUSTAR EL FONDO AL TAMAÑO VISIBLE
-   ========================================================= */
-
-function actualizarFondo() {
-
-    const distancia = 20;
-
-    const alturaVisible =
-        2 *
-        Math.tan(
-            THREE.MathUtils.degToRad(camera.fov / 2)
-        ) *
-        distancia;
-
-    const anchuraVisible =
-        alturaVisible * camera.aspect;
-
-
-    fondos.forEach(f => {
-
-        f.malla.scale.set(
-            anchuraVisible * 1.02,
-            alturaVisible * 1.02,
-            1
-        );
-
-        f.malla.position.set(
-            0,
-            0,
-            -distancia
-        );
-    });
-}
-agregarFondo('cielo.png', -55, 35,100,1);
+agregarFondo(
+    'nubes.png',
+    -35,
+    23,
+    90,
+    0.85
+);
 
 
 // Mantiene el fondo siguiendo la cámara.
@@ -539,7 +526,7 @@ const GEO_BLOQUE =
     new THREE.BoxGeometry(1, 1, 1);
 
 const GEO_TIERRA =
-    new THREE.BoxGeometry(1, 2, 1);
+    new THREE.BoxGeometry(1, 4, 1);
 
 
 /* =====================================================================
@@ -3431,4 +3418,3 @@ actualizarModeloJugador(0);
 
 // Iniciar el bucle de renderizado.
 renderer.setAnimationLoop(animate);
-

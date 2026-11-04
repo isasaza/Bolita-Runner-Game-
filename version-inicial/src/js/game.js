@@ -3358,7 +3358,7 @@ function iniciarJuego() {
     // Cambiar al estado de juego.
     estado = 'jugando';
 
-    // Actualizar vidas, puntos y tiempo.
+    // Actualizar vidas, puntos y tiempo
     actualizarHUD();
 }
 // pausa o reanudar el juego
@@ -3390,8 +3390,6 @@ function alternarPausa() {
             ui.pausa,
             false
         );
-
-
         // Reiniciar medicion de tiempo
         reloj.getDelta();
     }
@@ -3425,7 +3423,6 @@ function ganarNivel() {
         bonus
     );
 }
-
 /* ============================================================
    TERMINAR PARTIDA
 
@@ -3446,7 +3443,6 @@ function terminarJuego(
 
     // Actualizar HUD
     actualizarHUD();
-
 
   //Titulo Final
 

@@ -506,13 +506,8 @@ malla.position.set(
     x,
     y + alto / 2 - ajusteBase,
     z
-);
- // Acercar los elementos al plano del jugador
-            malla.position.set(
-                x,
-                y + alto / 2 - ajusteBase,
-                0.12
-            );
+) 
+
 
             
             if (grupoDestino !== grupoDecoracion) {

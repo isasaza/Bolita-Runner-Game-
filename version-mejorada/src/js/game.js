@@ -1370,6 +1370,8 @@ function actualizarGemas(dt, tiempo) {
             puntos += 100;
             gemasRecogidas++;
 
+            reproducirSonido('gemas');
+
 
             // Una vida extra por cada 20 gemas
             if (gemasRecogidas % 20 === 0) {

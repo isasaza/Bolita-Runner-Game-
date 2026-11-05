@@ -506,12 +506,7 @@ const z = nombre === 'arbol.png' || nombre === 'pino.png'
 
 const factor = (camera.position.z - z)/ camera.position.z;
 
-malla.userData.alturaOriginal = y + alto / 2 - ajusteBase;
 malla.scale.set(factor, factor, 1);
-
-malla.position.y + (malla.userData.alturaOriginal-camera.position.y)*factor,z
-
-
 malla.position.set(
     x,
     y + alto / 2 - ajusteBase,
@@ -1322,7 +1317,7 @@ function crearBloque(x, y, tipo) {
     malla.position.set(
         x + 0.5,
         y + 0.5,
-        0
+        esTerreno ? Z_CENTRO_MAPA:0
     );
 
     malla.castShadow = true;
@@ -1347,14 +1342,14 @@ function crearBloque(x, y, tipo) {
     if (tipo === "#" && y === 0) {
 
         const tierra = new THREE.Mesh(
-            GEO_TIERRA,
+            GEO_TIERRA_Z,
             MATERIALES.tierra
         );
 
         tierra.position.set(
             x + 0.5,
             y - 2,
-            0
+            Z_CENTRO_MAPA
         );
 
         tierra.receiveShadow = true;
@@ -1610,12 +1605,12 @@ function crearRampa(r) {
     const geoTierra = new THREE.ExtrudeGeometry(
         formaTierra,
         {
-            depth: 1,
+            depth: PROFUNDIDAD_MAPA,
             bevelEnabled: false
         }
     );
 
-    geoTierra.translate(0, 0, -0.5);
+    geoTierra.translate(0, 0, -PROFUNDIDAD_MAPA + 0.5);
 
 
     const tierra = new THREE.Mesh(
@@ -1655,7 +1650,7 @@ function crearRampa(r) {
     const geoPasto = new THREE.ExtrudeGeometry(
         formaPasto,
         {
-            depth: 1.02,
+            depth: PROFUNDIDAD_MAPA + 0.02,
             bevelEnabled: false
         }
     );
@@ -1663,7 +1658,7 @@ function crearRampa(r) {
     geoPasto.translate(
         0,
         0,
-        -0.51
+        -PROFUNDIDAD_MAPA + 0.49
     );
 
 
@@ -1692,7 +1687,7 @@ function crearEstanque(e) {
         new THREE.BoxGeometry(
             ancho,
             4.6,
-            0.96
+            PROFUNDIDAD_MAPA-0.04
         ),
 
         MATERIALES.agua
@@ -1701,7 +1696,7 @@ function crearEstanque(e) {
     agua.position.set(
         (e.x0 + e.x1) / 2,
         -1.7,
-        0
+        Z_CENTRO_MAPA
     );
 
     grupoNivel.add(agua);

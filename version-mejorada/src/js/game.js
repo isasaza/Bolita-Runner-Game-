@@ -183,7 +183,7 @@ const COLOR_CIELO = 0x6ec6ff;
 const scene = new THREE.Scene();
 
 scene.background = null;
-scene.fog = new THREE.Fog(COLOR_CIELO, 17, 45);
+scene.fog = new THREE.Fog(0xbddfff, 16, 30);
 
 
 // Cámara en perspectiva.

@@ -32,7 +32,8 @@ const sonidos = {
     reaparece: new Audio(RUTA_SONIDOS + 'reaparece.mp3'),
     meta: new Audio(RUTA_SONIDOS + 'meta.mp3'),
     gameover: new Audio(RUTA_SONIDOS + 'gameover.mp3'),
-    aplastar: new Audio(RUTA_SONIDOS + 'aplastarenemigo.mp3')
+    aplastar: new Audio(RUTA_SONIDOS + 'aplastarenemigo.mp3'),
+gemas: new Audio(RUTA_SONIDOS + 'gemas.mp3')
 };
 
 for (const sonido of Object.values(sonidos)) {

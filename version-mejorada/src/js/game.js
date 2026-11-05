@@ -33,7 +33,8 @@ const sonidos = {
     meta: new Audio(RUTA_SONIDOS + 'meta.mp3'),
     gameover: new Audio(RUTA_SONIDOS + 'gameover.mp3'),
     aplastar: new Audio(RUTA_SONIDOS + 'aplastarenemigo.mp3'),
-gemas: new Audio(RUTA_SONIDOS + 'gemas.mp3')
+gemas: new Audio(RUTA_SONIDOS + 'gemas.mp3'),
+golpecaja: new Audio(RUTA_SONIDOS +'golpecaja.mp3')
 };
 
 for (const sonido of Object.values(sonidos)) {
@@ -1896,7 +1897,7 @@ function resolverRampa(ent, dt) {
 function golpearBloque(listaBloques) {
 
     if (listaBloques.length === 0) return;
-
+reproducirSonido('golpecaja');
 
     // Elegir el bloque más cercano al centro de Junim
     const bloque = listaBloques.reduce(

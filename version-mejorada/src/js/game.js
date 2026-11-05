@@ -23,7 +23,60 @@ import * as THREE from 'three';
 /* =====================================================================
    1. CONFIGURACIÓN
    ===================================================================== */
+// Ruta de los sonidos.
+const RUTA_SONIDOS = './src/sonido/';
 
+// Música continua del juego.
+const musicaJuego = new Audio(
+    RUTA_SONIDOS + 'SonidoJuego.mp3'
+);
+
+musicaJuego.loop = true;
+musicaJuego.volume = 0.35;
+
+// Sonidos de los eventos.
+const sonidos = {
+    salto: new Audio(RUTA_SONIDOS + 'salto.mp3'),
+    reaparece: new Audio(RUTA_SONIDOS + 'reaparece.mp3'),
+    meta: new Audio(RUTA_SONIDOS + 'meta.mp3'),
+    gameover: new Audio(RUTA_SONIDOS + 'gameover.mp3'),
+    aplastar: new Audio(RUTA_SONIDOS + 'aplastarenemigo.mp3')
+};
+
+// Preparar efectos.
+for (const sonido of Object.values(sonidos)) {
+    sonido.preload = 'auto';
+    sonido.volume = 0.8;
+}
+
+// Reproducir el sonido solicitado.
+function reproducirSonido(nombre) {
+    const sonido = sonidos[nombre];
+
+    if (!sonido) return;
+
+    sonido.currentTime = 0;
+    sonido.play().catch(() => {});
+}
+
+// Iniciar música cuando el navegador lo permita.
+function iniciarMusica() {
+    if (musicaJuego.paused) {
+        musicaJuego.play().catch(() => {});
+    }
+}
+
+// Permitir iniciar música con la primera interacción.
+window.addEventListener('pointerdown', iniciarMusica);
+window.addEventListener('keydown', iniciarMusica);
+window.addEventListener('touchstart', iniciarMusica, {
+    passive: true
+});
+
+// Intentar reproducir desde que abre la página.
+iniciarMusica();
+
+//juego
 const CONFIG = {
     GRAVEDAD: -32,
 
@@ -3026,6 +3079,10 @@ function animate() {
 
         // Actualizar movimiento
         actualizarJugador(dt);
+        j.saltando = true;
+
+        //sonido cuando salta
+        reproducirSonido('salto')
 
 
         // Actualizar enemigos

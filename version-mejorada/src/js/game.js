@@ -183,7 +183,7 @@ const COLOR_CIELO = 0x6ec6ff;
 const scene = new THREE.Scene();
 
 scene.background = null;
-scene.fog = null;
+scene.fog = new THREE.fog(COLOR_CIELO, 17, 45);
 
 
 // Cámara en perspectiva.
@@ -376,6 +376,14 @@ function actualizarFondo(dt = 0) {
 
 const decoraciones = [];
 
+let grupoDecoracion = null;
+
+const Z_DECORACION = {
+    cercana: -2,
+    media: -7,
+    lejana: -13
+}
+
 function agregarDecoracion(
     nombre,
     x,
@@ -384,7 +392,7 @@ function agregarDecoracion(
     alto
 ) {
 
-    const grupoDestino = grupoNivel;
+    const grupoDestino = grupoDecoracion;
 
     cargadorTexturas.load(
 
@@ -421,7 +429,20 @@ function agregarDecoracion(
                     ? 0.45
                     : 0.12;
 
-            // Acercar los elementos al plano del jugador
+           
+// Profundidad segun el tipo de decoracion
+const z = nombre === 'arbol.png' || nombre === 'pino.png'
+    ? Z_DECORACION.lejana
+    : nombre === 'arbusto.png' || nombre === 'hongo.png'
+        ? Z_DECORACION.media
+        : Z_DECORACION.cercana;
+
+malla.position.set(
+    x,
+    y + alto / 2 - ajusteBase,
+    z
+);
+ // Acercar los elementos al plano del jugador
             malla.position.set(
                 x,
                 y + alto / 2 - ajusteBase,
@@ -429,7 +450,7 @@ function agregarDecoracion(
             );
 
             
-            if (grupoDestino !== grupoNivel) {
+            if (grupoDestino !== grupoDecoracion) {
                 malla.geometry.dispose();
                 malla.material.dispose();
                 return;
@@ -1039,8 +1060,12 @@ function construirNivel() {
     banderaMeta = null;
 
     decoraciones.length = 0;
-
-
+if (grupoDecoracion){
+    scene.remove(grupoDecoracion);
+}
+grupoDecoracion = new THREE.Group ();
+grupoDecoracion.name = 'DecoracionFondo';
+scene.add(grupoDecoracion)
     // Construir las rampas y los estanques
     RAMPAS.forEach(crearRampa);
     ESTANQUES.forEach(crearEstanque);

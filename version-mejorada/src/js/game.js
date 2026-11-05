@@ -584,6 +584,12 @@ const GEO_BLOQUE =
 const GEO_TIERRA =
     new THREE.BoxGeometry(1, 4, 1);
 
+    const PROFUNDIDAD_MAPA = 18;
+    const Z_CENTRO_MAPA = -(PROFUNDIDAD_MAPA-1)/2;
+
+    const GEO_TERRENO_Z = new THREE.BoxGeometry(1,1,PROFUNDIDAD_MAPA);
+    const GEO_TIERRA_Z = new THREE.BoxGeometry(1,4, PROFUNDIDAD_MAPA);
+
 
 /* =====================================================================
    5. MODELOS 3D
@@ -1308,8 +1314,8 @@ function crearBloque(x, y, tipo) {
 
 
     // cubo 3D.
-    const malla = new THREE.Mesh(
-        GEO_BLOQUE,
+    const esTerreno = ['#', 'T','=', 'L'].includes(tipo);
+    const malla = new THREE.Mesh(esTerreno? GEO_TERRENO_Z : GEO_BLOQUE,
         materialBloque
     );
 

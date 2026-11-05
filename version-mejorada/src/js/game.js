@@ -183,7 +183,7 @@ const COLOR_CIELO = 0x6ec6ff;
 const scene = new THREE.Scene();
 
 scene.background = null;
-scene.fog = new THREE.Fog(0xbddfff, 20, 70);
+scene.fog = new THREE.fog(COLOR_CIELO, 17, 45);
 
 
 // Cámara en perspectiva.
@@ -376,77 +376,11 @@ function actualizarFondo(dt = 0) {
 
 const decoraciones = [];
 
-// Neblina del escenario
-let grupoNeblina = null;
-
-function crearNeblina() {
-
-    if (grupoNeblina) {
-        scene.remove(grupoNeblina);
-    }
-
-    grupoNeblina = new THREE.Group();
-    scene.add(grupoNeblina);
-
-    // Crear textura de neblina
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 128;
-
-    const ctx = canvas.getContext('2d');
-
-    const degradado = ctx.createRadialGradient(
-        128, 64, 5,
-        128, 64, 125
-    );
-
-    degradado.addColorStop(0, 'rgba(245,250,255,0.8)');
-    degradado.addColorStop(0.5, 'rgba(245,250,255,0.4)');
-    degradado.addColorStop(1, 'rgba(245,250,255,0)');
-
-    ctx.fillStyle = degradado;
-    ctx.fillRect(0, 0, 256, 128);
-
-    const textura = new THREE.CanvasTexture(canvas);
-
-    const materialNeblina = new THREE.MeshBasicMaterial({
-        map: textura,
-        transparent: true,
-        opacity: 0.85,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        fog: false
-    });
-
-    const geometria = new THREE.PlaneGeometry(12, 4);
-
-    // Colocar neblina en dos profundidades
-    for (let x = 0; x <= 220; x += 9) {
-
-        for (const z of [-1.5, -7]) {
-
-            const nube = new THREE.Mesh(
-                geometria,
-                materialNeblina
-            );
-
-            nube.position.set(
-                x + (z === -7 ? 4 : 0),
-                1.5 + Math.sin(x * 0.3) * 0.4,
-                z
-            );
-
-            grupoNeblina.add(nube);
-        }
-    }
-}
-
 let grupoDecoracion = null;
 
 const Z_DECORACION = {
     cercana: -2,
-    media: -7,
-    lejana: -13
+    media: -7 
 }
 
 function agregarDecoracion(
@@ -457,7 +391,7 @@ function agregarDecoracion(
     alto
 ) {
 
-    const grupoDestino = grupoDecoracion;
+    const grupoDestino = grupoNivel;
 
     cargadorTexturas.load(
 
@@ -494,28 +428,15 @@ function agregarDecoracion(
                     ? 0.45
                     : 0.12;
 
-           
-// Profundidad segun el tipo de decoracion
-const z = nombre === 'arbol.png' || nombre === 'pino.png'
-    ? Z_DECORACION.lejana
-    : nombre === 'arbusto.png' || nombre === 'hongo.png'
-        ? Z_DECORACION.media
-        : Z_DECORACION.cercana;
-
-      //ajustar tamalo perspectiva
-
-const factor = (camera.position.z - z)/ camera.position.z;
-
-malla.scale.set(factor, factor, 1);
-malla.position.set(
-    x,
-    y + alto / 2 - ajusteBase,
-    z
-) 
-
+            // Acercar los elementos al plano del jugador
+            malla.position.set(
+                x,
+                y + alto / 2 - ajusteBase,
+                0.12
+            );
 
             
-            if (grupoDestino !== grupoDecoracion) {
+            if (grupoDestino !== grupoNivel) {
                 malla.geometry.dispose();
                 malla.material.dispose();
                 return;
@@ -578,12 +499,6 @@ const GEO_BLOQUE =
 
 const GEO_TIERRA =
     new THREE.BoxGeometry(1, 4, 1);
-
-    const PROFUNDIDAD_MAPA = 18;
-    const Z_CENTRO_MAPA = -(PROFUNDIDAD_MAPA-1)/2;
-
-    const GEO_TERRENO_Z = new THREE.BoxGeometry(1,1,PROFUNDIDAD_MAPA);
-    const GEO_TIERRA_Z = new THREE.BoxGeometry(1,4, PROFUNDIDAD_MAPA);
 
 
 /* =====================================================================
@@ -1131,13 +1046,8 @@ function construirNivel() {
     banderaMeta = null;
 
     decoraciones.length = 0;
-if (grupoDecoracion){
-    scene.remove(grupoDecoracion);
-}
-grupoDecoracion = new THREE.Group ();
-grupoDecoracion.name = 'DecoracionFondo';
-scene.add(grupoDecoracion)
-crearNeblina();
+
+
     // Construir las rampas y los estanques
     RAMPAS.forEach(crearRampa);
     ESTANQUES.forEach(crearEstanque);
@@ -1309,15 +1219,15 @@ function crearBloque(x, y, tipo) {
 
 
     // cubo 3D.
-    const esTerreno = ['#', 'T','=', 'L'].includes(tipo);
-    const malla = new THREE.Mesh(esTerreno? GEO_TERRENO_Z : GEO_BLOQUE,
+    const malla = new THREE.Mesh(
+        GEO_BLOQUE,
         materialBloque
     );
 
     malla.position.set(
         x + 0.5,
         y + 0.5,
-        esTerreno ? Z_CENTRO_MAPA:0
+        0
     );
 
     malla.castShadow = true;
@@ -1342,14 +1252,14 @@ function crearBloque(x, y, tipo) {
     if (tipo === "#" && y === 0) {
 
         const tierra = new THREE.Mesh(
-            GEO_TIERRA_Z,
+            GEO_TIERRA,
             MATERIALES.tierra
         );
 
         tierra.position.set(
             x + 0.5,
             y - 2,
-            Z_CENTRO_MAPA
+            0
         );
 
         tierra.receiveShadow = true;
@@ -1605,12 +1515,12 @@ function crearRampa(r) {
     const geoTierra = new THREE.ExtrudeGeometry(
         formaTierra,
         {
-            depth: PROFUNDIDAD_MAPA,
+            depth: 1,
             bevelEnabled: false
         }
     );
 
-    geoTierra.translate(0, 0, -PROFUNDIDAD_MAPA + 0.5);
+    geoTierra.translate(0, 0, -0.5);
 
 
     const tierra = new THREE.Mesh(
@@ -1650,7 +1560,7 @@ function crearRampa(r) {
     const geoPasto = new THREE.ExtrudeGeometry(
         formaPasto,
         {
-            depth: PROFUNDIDAD_MAPA + 0.02,
+            depth: 1.02,
             bevelEnabled: false
         }
     );
@@ -1658,7 +1568,7 @@ function crearRampa(r) {
     geoPasto.translate(
         0,
         0,
-        -PROFUNDIDAD_MAPA + 0.49
+        -0.51
     );
 
 
@@ -1687,7 +1597,7 @@ function crearEstanque(e) {
         new THREE.BoxGeometry(
             ancho,
             4.6,
-            PROFUNDIDAD_MAPA-0.04
+            0.96
         ),
 
         MATERIALES.agua
@@ -1696,7 +1606,7 @@ function crearEstanque(e) {
     agua.position.set(
         (e.x0 + e.x1) / 2,
         -1.7,
-        Z_CENTRO_MAPA
+        0
     );
 
     grupoNivel.add(agua);

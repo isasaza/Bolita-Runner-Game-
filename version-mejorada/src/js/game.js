@@ -20,21 +20,13 @@ RUNNER GAME MEJORADO Y CON EL SONIDO
 
 import * as THREE from 'three';
 
-/* =====================================================================
-   1. CONFIGURACIÓN
-   ===================================================================== */
-// Ruta de los sonidos.
+// Música del juego en bucle.
 const RUTA_SONIDOS = './src/sonido/';
-
-// Música continua del juego.
-const musicaJuego = new Audio(
-    RUTA_SONIDOS + 'SonidoJuego.mp3'
-);
-
+const musicaJuego = new Audio(RUTA_SONIDOS + 'SonidoJuego.mp3');
 musicaJuego.loop = true;
 musicaJuego.volume = 0.35;
 
-// Sonidos de los eventos.
+// Sonidos de las acciones.
 const sonidos = {
     salto: new Audio(RUTA_SONIDOS + 'salto.mp3'),
     reaparece: new Audio(RUTA_SONIDOS + 'reaparece.mp3'),
@@ -43,40 +35,36 @@ const sonidos = {
     aplastar: new Audio(RUTA_SONIDOS + 'aplastarenemigo.mp3')
 };
 
-// Preparar efectos.
 for (const sonido of Object.values(sonidos)) {
     sonido.preload = 'auto';
     sonido.volume = 0.8;
 }
 
-// Reproducir el sonido solicitado.
+// Reproduce un efecto cuando ocurre su evento.
 function reproducirSonido(nombre) {
     const sonido = sonidos[nombre];
-
     if (!sonido) return;
-
     sonido.currentTime = 0;
     sonido.play().catch(() => {});
 }
 
-// Iniciar música cuando el navegador lo permita.
+// Inicia la música cuando el navegador permite sonido.
 function iniciarMusica() {
     if (musicaJuego.paused) {
         musicaJuego.play().catch(() => {});
     }
 }
 
-// Permitir iniciar música con la primera interacción.
 window.addEventListener('pointerdown', iniciarMusica);
 window.addEventListener('keydown', iniciarMusica);
-window.addEventListener('touchstart', iniciarMusica, {
-    passive: true
-});
-
-// Intentar reproducir desde que abre la página.
+window.addEventListener('touchstart', iniciarMusica, { passive: true });
 iniciarMusica();
 
-//juego
+
+/* =====================================================================
+   1. CONFIGURACIÓN
+   ===================================================================== */
+
 const CONFIG = {
     GRAVEDAD: -32,
 
@@ -269,6 +257,8 @@ luzSol.shadow.camera.far = 60;
 
 scene.add(luzSol);
 scene.add(luzSol.target);
+
+
 /* =====================================================================
    4. MATERIALES Y GEOMETRÍAS
    ===================================================================== */
@@ -374,8 +364,6 @@ function actualizarFondo(dt = 0) {
     capaNubes.style.backgroundPositionX =
         `${-x * 18 - derivaNubes}px`;
 }
-
-
 /* =====================================================================
    DECORACIONES DEL ESCENARIO
 
@@ -1612,8 +1600,6 @@ function crearEstanque(e) {
 
     grupoNivel.add(agua);
 }
-
-
 /* =====================================================================
    7. ENTRADA DEL TECLADO
    ===================================================================== */
@@ -1842,10 +1828,10 @@ function moverEntidad(ent, dt, alGolpearTecho) {
         ent.vy = 0;
     }
 }
+
 //colision con rampa
 
-function resolverRampa(ent,dt){   
-
+function resolverRampa(ent, dt) {
 
     ent.enRampa = false;
     ent.pendiente = 0;
@@ -1882,24 +1868,20 @@ function resolverRampa(ent,dt){
         ent.pendiente = pendiente;
     }
 
+    // Comprueba si dos entidades se superponen
+    function seSuperponen(a, b) {
 
+        return (
+            Math.abs(a.x - b.x) <
+                (a.ancho + b.ancho) / 2 &&
 
-// Comprueba si dos entidades se superponen
-function seSuperponen(a, b) {
+            a.y < b.y + b.alto &&
 
-    return (
-        Math.abs(a.x - b.x) <
-            (a.ancho + b.ancho) / 2 &&
-
-        a.y < b.y + b.alto &&
-
-        a.y + a.alto > b.y
-    );
+            a.y + a.alto > b.y
+        );
+    }
 }
 
-
-
-}
 /* =====================================================================
    9. BLOQUES Y CAJAS MISTERIOSAS
 
@@ -1923,11 +1905,13 @@ function golpearBloque(listaBloques) {
                 ? b
                 : mejor
     );
+
 //caja madera
 
     if (bloque.tipo === 'B') {
 
         destruirBloque(bloque);
+
 //caja misteriosa 
 
     } else if (bloque.tipo === 'G') {
@@ -1973,6 +1957,7 @@ function golpearBloque(listaBloques) {
         }
     });
 }
+
 //destruir cajas de madera
 function destruirBloque(bloque) {
 
@@ -1997,7 +1982,6 @@ function destruirBloque(bloque) {
     // Recompensa
     puntos += 50;
 }
-
 
 /* =====================================================================
    10. JUGADOR JUNIMO
@@ -2045,7 +2029,6 @@ const jugador = {
     pendiente: 0,
     rodando: false,
 
-    
     malla: crearModeloJugador()
 };
 
@@ -2182,7 +2165,7 @@ function actualizarJugador(dt) {
         Math.min(limite, j.vx)
     );
 
-//salto coyote 
+//salto coyote
 
     j.tiempoCoyote = j.enSuelo
         ? CONFIG.TIEMPO_COYOTE
@@ -2204,8 +2187,12 @@ function actualizarJugador(dt) {
         j.tiempoCoyote = 0;
 
         j.saltando = true;
+
+        // Sonido al saltar
+        reproducirSonido('salto');
     }
-//altura del salto 
+
+//altura del salto
 
     if (
         j.saltando &&
@@ -2222,6 +2209,7 @@ function actualizarJugador(dt) {
     if (j.vy <= 0) {
         j.saltando = false;
     }
+
 // gravedad
 
     const g = j.vy < 0
@@ -2274,6 +2262,7 @@ function actualizarJugador(dt) {
             Math.abs(vyAntes) * 0.015
         );
     }
+
 //rodar
 
     if (
@@ -2291,7 +2280,8 @@ function actualizarJugador(dt) {
 
         j.rodando = false;
     }
-//cae al vacio 
+
+//cae al vacio
 
     if (j.y < CONFIG.LIMITE_CAIDA) {
 
@@ -2299,7 +2289,8 @@ function actualizarJugador(dt) {
 
         return;
     }
-// punto control 
+
+// punto control
 
     if (
         puntoControl &&
@@ -2317,7 +2308,8 @@ function actualizarJugador(dt) {
 
         mostrarAviso('¡PUNTO DE CONTROL!');
     }
-//meta 
+
+//meta
 
     if (
         banderaMeta &&
@@ -2328,7 +2320,8 @@ function actualizarJugador(dt) {
 
         return;
     }
-//invulnerabilidad 
+
+//invulnerabilidad
 
     if (j.invulnerable > 0) {
 
@@ -2359,7 +2352,8 @@ function actualizarModeloJugador(dt) {
 
 
     const partes = m.userData;
-//animacion cuando rueda 
+
+//animacion cuando rueda
 
     if (j.rodando) {
 
@@ -2369,7 +2363,7 @@ function actualizarModeloJugador(dt) {
         partes.extremidades.visible = false;
 
 
-    // animación mientras camina 
+    // animación mientras camina
     } else {
 
         // Recuperar orientación vertical del cuerpo
@@ -2427,6 +2421,7 @@ function perderVida(conAnimacion) {
 
     jugador.vx = 0;
 }
+
 //animacon muerte y reaparecer jugador
 function actualizarMuerte(dt) {
 
@@ -2462,6 +2457,9 @@ function actualizarMuerte(dt) {
             // Volver al punto de control o al inicio
             reaparecerJugador();
 
+            // Sonido cuando reaparece
+            reproducirSonido('reaparece');
+
             // Restaurar el tiempo
             tiempoRestante = CONFIG.TIEMPO_NIVEL;
 
@@ -2469,6 +2467,7 @@ function actualizarMuerte(dt) {
         }
     }
 }
+
 // 1. Enemigos 
 function actualizarEnemigos(dt, tiempo) {
 
@@ -2588,6 +2587,9 @@ function actualizarEnemigos(dt, tiempo) {
 
                     derrotarEnemigo(en, 200);
 
+                    // Sonido al aplastar enemigo
+                    reproducirSonido('aplastar');
+
                     jugador.vy =
                         CONFIG.FUERZA_SALTO *
                         CONFIG.REBOTE_PISADA;
@@ -2607,6 +2609,7 @@ function actualizarEnemigos(dt, tiempo) {
         }
     });
 }
+
 //derrotar enemigos
 
 function derrotarEnemigo(en, puntosGanados) {
@@ -2760,7 +2763,6 @@ function animarNivel(dt, tiempo) {
     }
 }
 
-
 /* =====================================================================
    13. CÁMARA
    ===================================================================== */
@@ -2810,7 +2812,7 @@ function actualizarCamara(dt) {
 }
 
 /* =====================================================================
-   LUZ 
+   LUZ
    ===================================================================== */
 
 function moverSol() {
@@ -2873,6 +2875,7 @@ function actualizarHUD() {
     ui.tiempo.textContent =
         Math.ceil(tiempoRestante);
 }
+
 //avisos
 let temporizadorAviso = null;
 
@@ -2987,6 +2990,7 @@ function iniciarJuego() {
 
     actualizarHUD();
 }
+
 //pausar y reanudar
 
 function alternarPausa() {
@@ -3010,7 +3014,7 @@ function alternarPausa() {
     }
 }
 
-//victoria 
+//victoria
 
 function ganarNivel() {
 
@@ -3031,6 +3035,9 @@ function terminarJuego(gano, bonus = 0) {
     estado = gano
         ? 'victoria'
         : 'gameover';
+
+    // Sonido de meta o Game Over
+    reproducirSonido(gano ? 'meta' : 'gameover');
 
 
     actualizarHUD();
@@ -3079,10 +3086,6 @@ function animate() {
 
         // Actualizar movimiento
         actualizarJugador(dt);
-        j.saltando = true;
-
-        //sonido cuando salta
-        reproducirSonido('salto')
 
 
         // Actualizar enemigos

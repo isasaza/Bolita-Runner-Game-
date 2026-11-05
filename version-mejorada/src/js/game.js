@@ -183,7 +183,7 @@ const COLOR_CIELO = 0x6ec6ff;
 const scene = new THREE.Scene();
 
 scene.background = null;
-scene.fog = new THREE.Fog("#FF0000", 16, 30);
+scene.fog = new THREE.Fog("#1100ff", 16, 30);
 
 
 // Cámara en perspectiva.
@@ -375,6 +375,71 @@ function actualizarFondo(dt = 0) {
    ===================================================================== */
 
 const decoraciones = [];
+
+// Neblina del escenario
+let grupoNeblina = null;
+
+function crearNeblina() {
+
+    if (grupoNeblina) {
+        scene.remove(grupoNeblina);
+    }
+
+    grupoNeblina = new THREE.Group();
+    scene.add(grupoNeblina);
+
+    // Crear textura de neblina
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+
+    const ctx = canvas.getContext('2d');
+
+    const degradado = ctx.createRadialGradient(
+        128, 64, 5,
+        128, 64, 125
+    );
+
+    degradado.addColorStop(0, 'rgba(245,250,255,0.8)');
+    degradado.addColorStop(0.5, 'rgba(245,250,255,0.4)');
+    degradado.addColorStop(1, 'rgba(245,250,255,0)');
+
+    ctx.fillStyle = degradado;
+    ctx.fillRect(0, 0, 256, 128);
+
+    const textura = new THREE.CanvasTexture(canvas);
+
+    const materialNeblina = new THREE.MeshBasicMaterial({
+        map: textura,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        fog: false
+    });
+
+    const geometria = new THREE.PlaneGeometry(12, 4);
+
+    // Colocar neblina en dos profundidades
+    for (let x = 0; x <= 220; x += 9) {
+
+        for (const z of [-1.5, -7]) {
+
+            const nube = new THREE.Mesh(
+                geometria,
+                materialNeblina
+            );
+
+            nube.position.set(
+                x + (z === -7 ? 4 : 0),
+                1.5 + Math.sin(x * 0.3) * 0.4,
+                z
+            );
+
+            grupoNeblina.add(nube);
+        }
+    }
+}
 
 let grupoDecoracion = null;
 
@@ -1066,6 +1131,7 @@ if (grupoDecoracion){
 grupoDecoracion = new THREE.Group ();
 grupoDecoracion.name = 'DecoracionFondo';
 scene.add(grupoDecoracion)
+crearNeblina();
     // Construir las rampas y los estanques
     RAMPAS.forEach(crearRampa);
     ESTANQUES.forEach(crearEstanque);

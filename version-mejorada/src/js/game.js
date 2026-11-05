@@ -2797,25 +2797,29 @@ const ui = {
 
     finTitulo: document.getElementById('fin-titulo'),
 
-    finDetalle: document.getElementById('fin-detalle')
-};
+    finDetalle: document.getElementById('fin-detalle'),
 
+    gemas: document.getElementById('hud-gemas'),
+};
 
 function actualizarHUD() {
 
+    // Mostrar vidas.
     ui.vidas.textContent = vidas;
 
+    // Mostrar gemas recogidas.
+    if (ui.gemas) {
+        ui.gemas.textContent = gemasRecogidas;
+    }
 
-    // Mostrar puntos con seis dígitos
+    // Mostrar puntos con seis digitos.
     ui.puntos.textContent =
         String(puntos).padStart(6, '0');
 
-
+    // Mostrar tiempo restante.
     ui.tiempo.textContent =
         Math.ceil(tiempoRestante);
 }
-
-
 //avisos
 let temporizadorAviso = null;
 

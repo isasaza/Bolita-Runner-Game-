@@ -502,6 +502,16 @@ const z = nombre === 'arbol.png' || nombre === 'pino.png'
         ? Z_DECORACION.media
         : Z_DECORACION.cercana;
 
+      //ajustar tamalo perspectiva
+
+const factor = (camera.position.z - z)/ camera.position.z;
+
+malla.userData.alturaOriginal = y + alto / 2 - ajusteBase;
+malla.scale.set(factor, factor, 1);
+
+malla.position.y + (malla.userData.alturaOriginal-camera.position.y)*factor,z
+
+
 malla.position.set(
     x,
     y + alto / 2 - ajusteBase,
